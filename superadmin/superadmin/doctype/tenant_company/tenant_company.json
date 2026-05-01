@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "TC-.#####",
+ "creation": "2026-05-01 12:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company_name",
+  "site_name",
+  "server_ip",
+  "column_break_1",
+  "admin_email",
+  "admin_password",
+  "section_provisioning",
+  "progress_bar",
+  "progress_percent",
+  "progress_stage",
+  "status",
+  "provision_log",
+  "section_hosts",
+  "hosts_file_entry",
+  "hosts_instructions"
+ ],
+ "fields": [
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Company Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "description": "FQDN for the new site, e.g. company1.local",
+   "label": "Site Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "192.168.124.137",
+   "fieldname": "server_ip",
+   "fieldtype": "Data",
+   "label": "Server IP (for hosts file)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "admin_email",
+   "fieldtype": "Data",
+   "label": "Administrator Email",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "admin_password",
+   "fieldtype": "Password",
+   "label": "Administrator Password"
+  },
+  {
+   "description": "After Save, use the **Create Site** button on this form. Status and log fill when the background worker runs (`bench worker` must be running).",
+   "fieldname": "section_provisioning",
+   "fieldtype": "Section Break",
+   "label": "Provisioning"
+  },
+  {
+   "fieldname": "progress_bar",
+   "fieldtype": "HTML",
+   "label": "Progress"
+  },
+  {
+   "default": "0",
+   "fieldname": "progress_percent",
+   "fieldtype": "Percent",
+   "label": "Progress Percent",
+   "read_only": 1
+  },
+  {
+   "fieldname": "progress_stage",
+   "fieldtype": "Data",
+   "label": "Current Stage",
+   "read_only": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nQueued\nProvisioning\nActive\nFailed",
+   "read_only": 1
+  },
+  {
+   "description": "Output from `bench new-site` appears here after the job runs.",
+   "fieldname": "provision_log",
+   "fieldtype": "Long Text",
+   "label": "Provision Log",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_hosts",
+   "fieldtype": "Section Break",
+   "label": "Hosts file (Windows)"
+  },
+  {
+   "fieldname": "hosts_file_entry",
+   "fieldtype": "Small Text",
+   "label": "Hosts File Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "hosts_instructions",
+   "fieldtype": "Small Text",
+   "label": "Instructions",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "name": "Tenant Company",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

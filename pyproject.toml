@@ -1,0 +1,14 @@
+[project]
+name = "superadmin"
+authors = [{ name = "Superadmin", email = "admin@example.com" }]
+description = "Central tenant provisioning for multi-site ERPNext"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.dev-dependencies]
