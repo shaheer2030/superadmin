@@ -5,6 +5,8 @@ from frappe.model.document import Document
 
 class TenantCompany(Document):
 	def validate(self):
+		if self.install_apps is not None:
+			self.install_apps = self.install_apps.strip()
 		self.set_hosts_file_entry()
 		self.set_hosts_instructions()
 

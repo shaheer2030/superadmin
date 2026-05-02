@@ -2,7 +2,7 @@
 name = "superadmin"
 authors = [{ name = "Superadmin", email = "admin@example.com" }]
 description = "Central tenant provisioning for multi-site ERPNext"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = []

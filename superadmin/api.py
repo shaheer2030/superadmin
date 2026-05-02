@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import json
 import os
 import re
 import shutil
 import subprocess
+from typing import Optional
 
 import frappe
 from frappe import _
@@ -22,7 +25,7 @@ def _validate_site_name(site_name: str) -> None:
 		)
 
 
-def _read_mariadb_root_from_config_files() -> str | None:
+def _read_mariadb_root_from_config_files() -> Optional[str]:
 	"""Worker-safe: read key directly from JSON in case conf merge/cache differs from web request."""
 	bench_path = get_bench_path()
 	sites = os.path.join(bench_path, "sites")
@@ -83,7 +86,7 @@ def _mask_cmd(cmd: list) -> str:
 	return " ".join(out)
 
 
-def _append_log(existing: str | None, text: str) -> str:
+def _append_log(existing: Optional[str], text: str) -> str:
 	return ((existing or "").rstrip() + "\n\n" + text.strip()).strip()[-65000:]
 
 
@@ -91,13 +94,16 @@ def _set_progress(
 	doc,
 	percent: int,
 	stage: str,
-	status: str | None = None,
-	log_text: str | None = None,
+	status: Optional[str] = None,
+	log_text: Optional[str] = None,
 	append_log: bool = True,
+	company_access: Optional[str] = None,
 ):
 	doc.reload()
 	if status:
 		doc.status = status
+	if company_access is not None:
+		doc.company_access = company_access
 	doc.progress_percent = percent
 	doc.progress_stage = stage
 	if log_text is not None:
@@ -188,6 +194,44 @@ def _site_has_app(site_name: str, app_name: str) -> bool:
 		return app_name in {line.strip() for line in f if line.strip()}
 
 
+def _hook_default_install_apps() -> list:
+	"""Resolve `superadmin_default_install_apps` from hooks (all installed apps merged)."""
+	h = frappe.get_hooks("superadmin_default_install_apps") or []
+	out = []
+	for item in h:
+		if isinstance(item, (list, tuple)):
+			out.extend(str(x).strip() for x in item if str(x).strip())
+		else:
+			s = str(item).strip()
+			if s:
+				out.append(s)
+	return out or ["erpnext"]
+
+
+def _apps_to_install(doc) -> list:
+	"""Per-tenant → common_site_config → hooks default."""
+	raw = (getattr(doc, "install_apps", None) or "").strip()
+	if raw:
+		return [p.strip() for p in re.split(r"[\n,]+", raw) if p.strip()]
+	conf = frappe.conf.get("superadmin_tenant_install_apps")
+	if isinstance(conf, (list, tuple)) and len(conf) > 0:
+		return [str(x).strip() for x in conf if str(x).strip()]
+	if isinstance(conf, str) and conf.strip():
+		return [p.strip() for p in re.split(r"[\n,]+", conf) if p.strip()]
+	return _hook_default_install_apps()
+
+
+def _validate_apps_on_bench(app_names: list) -> None:
+	root = os.path.join(get_bench_path(), "apps")
+	missing = [a for a in app_names if not os.path.isdir(os.path.join(root, a))]
+	if missing:
+		frappe.throw(
+			_("These apps are missing under bench/apps — clone or get-app them first: {0}").format(
+				", ".join(missing)
+			)
+		)
+
+
 @frappe.whitelist()
 def create_tenant_site(docname: str):
 	frappe.only_for("System Manager")
@@ -202,6 +246,11 @@ def create_tenant_site(docname: str):
 	admin_pw = doc.get_password("admin_password")
 	if not admin_pw:
 		frappe.throw(_("Set Administrator Password before creating the site."))
+
+	apps_to_install = _apps_to_install(doc)
+	if not apps_to_install:
+		frappe.throw(_("Configure **Install apps** (or site config / hooks default)."))
+	_validate_apps_on_bench(apps_to_install)
 
 	doc.status = "Queued"
 	doc.progress_percent = 5
@@ -236,6 +285,10 @@ def _provision_job(docname: str):
 	admin_pw = doc.get_password("admin_password")
 	admin_email = (doc.admin_email or "").strip()
 	company_name = (doc.company_name or "").strip()
+	apps_to_install = _apps_to_install(doc)
+	if not apps_to_install:
+		frappe.throw(_("No apps to install — check **Install apps** or site config."))
+	_validate_apps_on_bench(apps_to_install)
 
 	bench = _bench_executable()
 	cwd = get_bench_path()
@@ -250,21 +303,23 @@ def _provision_job(docname: str):
 		admin_pw,
 		"--verbose",
 	]
-	install_erpnext_cmd = [bench, "--site", site_name, "install-app", "erpnext"]
-
 	preview = (
 		_("MariaDB root password resolved from: {0}\n").format(root_pw_source)
 		+ _("Step 1: {0}\n").format(_mask_cmd(new_site_cmd))
-		+ _("Step 2: {0}\n").format(_mask_cmd(install_erpnext_cmd))
-		+ _("CWD: {0}\nBench binary: {1}\n").format(cwd, bench)
+		+ _("Apps to install: {0}\n").format(", ".join(apps_to_install))
 	)
+	for app_name in apps_to_install:
+		preview += _("Then: {0}\n").format(
+			_mask_cmd([bench, "--site", site_name, "install-app", app_name])
+		)
+	preview += _("CWD: {0}\nBench binary: {1}\n").format(cwd, bench)
 
 	try:
 		if _site_exists(site_name):
 			_set_progress(
 				doc,
 				50,
-				_("Installing ERPNext"),
+				_("Installing applications"),
 				log_text=preview
 				+ "\n"
 				+ _("Site {0} already exists. Skipping new-site and continuing retry.").format(site_name),
@@ -279,23 +334,28 @@ def _provision_job(docname: str):
 				append_log=False,
 			)
 			new_site_log = _run_bench_command(new_site_cmd, cwd)
-			_set_progress(doc, 50, _("Installing ERPNext"), log_text="--- new-site output ---\n" + new_site_log)
+			_set_progress(doc, 50, _("Installing applications"), log_text="--- new-site output ---\n" + new_site_log)
 
-		if _site_has_app(site_name, "erpnext"):
-			_set_progress(
-				doc,
-				80,
-				_("Creating administrator account"),
-				log_text=_("ERPNext is already installed on {0}. Skipping install-app.").format(site_name),
-			)
-		else:
-			erpnext_log = _run_bench_command(install_erpnext_cmd, cwd)
-			_set_progress(
-				doc,
-				80,
-				_("Creating administrator account"),
-				log_text="--- install-app erpnext output ---\n" + erpnext_log,
-			)
+		n_apps = max(len(apps_to_install), 1)
+		for idx, app_name in enumerate(apps_to_install):
+			pct = 50 + int(35 * (idx + 1) / n_apps)
+			pct = min(pct, 85)
+			if _site_has_app(site_name, app_name):
+				_set_progress(
+					doc,
+					pct,
+					_("Checking {0}").format(app_name),
+					log_text=_("{0} is already on site {1}. Skipping install-app.").format(app_name, site_name),
+				)
+			else:
+				install_cmd = [bench, "--site", site_name, "install-app", app_name]
+				app_log = _run_bench_command(install_cmd, cwd)
+				_set_progress(
+					doc,
+					pct,
+					_("Installing {0}").format(app_name),
+					log_text="--- install-app {0} ---\n{1}".format(app_name, app_log),
+				)
 
 		_configure_tenant_admin(site_name, admin_email, admin_pw, company_name)
 		doc = frappe.get_doc("Tenant Company", docname)
@@ -305,6 +365,7 @@ def _provision_job(docname: str):
 			_("Completed"),
 			status="Active",
 			log_text=_("Created administrator user {0} on {1}.").format(admin_email, site_name),
+			company_access="Active",
 		)
 	except Exception:
 		doc.reload()

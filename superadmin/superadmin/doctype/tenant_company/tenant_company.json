@@ -14,12 +14,15 @@
   "column_break_1",
   "admin_email",
   "admin_password",
+  "install_apps",
   "section_provisioning",
   "progress_bar",
   "progress_percent",
   "progress_stage",
   "status",
   "provision_log",
+  "section_company_access",
+  "company_access",
   "section_hosts",
   "hosts_file_entry",
   "hosts_instructions"
@@ -42,7 +45,6 @@
    "unique": 1
   },
   {
-   "default": "192.168.124.137",
    "fieldname": "server_ip",
    "fieldtype": "Data",
    "label": "Server IP (for hosts file)",
@@ -63,6 +65,13 @@
    "fieldname": "admin_password",
    "fieldtype": "Password",
    "label": "Administrator Password"
+  },
+  {
+   "default": "erpnext",
+   "description": "Comma or newline separated app folder names under bench/apps (installed in order). Leave default for standard ERPNext stacks. Empty uses sites/common_site_config.json → superadmin_tenant_install_apps if set, else hook superadmin_default_install_apps.",
+   "fieldname": "install_apps",
+   "fieldtype": "Small Text",
+   "label": "Install apps"
   },
   {
    "description": "After Save, use the **Create Site** button on this form. Status and log fill when the background worker runs (`bench worker` must be running).",
@@ -102,6 +111,22 @@
    "fieldname": "provision_log",
    "fieldtype": "Long Text",
    "label": "Provision Log",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.status==\"Active\"",
+   "fieldname": "section_company_access",
+   "fieldtype": "Section Break",
+   "label": "Company access"
+  },
+  {
+   "default": "Active",
+   "description": "Suspended sites show the maintenance page. Use toolbar buttons to change.",
+   "fieldname": "company_access",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Access",
+   "options": "Active\nSuspended",
    "read_only": 1
   },
   {

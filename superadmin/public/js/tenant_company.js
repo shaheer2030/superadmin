@@ -31,14 +31,65 @@ frappe.ui.form.on("Tenant Company", {
 		} else if (st === "Failed") {
 			frm.set_intro(__("Provisioning failed. Read **Provision Log** below, fix the issue, then try **Create Site** again."), "red");
 		} else if (st === "Active") {
-			frm.set_intro(__("Site was created. Use **Hosts File Entry** below on client PCs."), "green");
+			if ((frm.doc.company_access || "Active") === "Suspended") {
+				frm.set_intro(
+					__(
+						"This company is **suspended**: visitors see the maintenance page. Use **Activate company** in the menu to restore access."
+					),
+					"orange"
+				);
+			} else {
+				frm.set_intro(
+					__(
+						"Site was created. Use **Hosts File Entry** below on client PCs. Use **Suspend company** to show maintenance mode for this tenant."
+					),
+					"green"
+				);
+			}
 		}
 
 		if (["Queued", "Provisioning"].includes(st)) {
 			setup_auto_reload(frm);
 		}
 
-		if (["Active", "Queued", "Provisioning"].includes(st)) {
+		if (st === "Active") {
+			if ((frm.doc.company_access || "Active") !== "Suspended") {
+				frm.add_custom_button(__("Suspend company"), () => {
+					frappe.confirm(__("Suspend this company? Users will see the maintenance page."), () => {
+						frappe.call({
+							method: "superadmin.tenant_access.suspend_tenant_company",
+							args: { docname: frm.doc.name },
+							freeze: true,
+							freeze_message: __("Applying maintenance mode…"),
+							callback(r) {
+								if (!r.exc) {
+									frappe.show_alert({ message: __("Company suspended."), indicator: "orange" });
+									frm.reload_doc();
+								}
+							},
+						});
+					});
+				});
+			} else {
+				frm.add_custom_button(__("Activate company"), () => {
+					frappe.call({
+						method: "superadmin.tenant_access.activate_tenant_company",
+						args: { docname: frm.doc.name },
+						freeze: true,
+						freeze_message: __("Removing maintenance mode…"),
+						callback(r) {
+							if (!r.exc) {
+								frappe.show_alert({ message: __("Company activated."), indicator: "green" });
+								frm.reload_doc();
+							}
+						},
+					});
+				});
+			}
+			return;
+		}
+
+		if (["Queued", "Provisioning"].includes(st)) {
 			return;
 		}
 
@@ -71,8 +122,11 @@ function render_progress(frm) {
 	const percent = cint(frm.doc.progress_percent || 0);
 	const stage = frm.doc.progress_stage || frm.doc.status || __("Draft");
 	const status = frm.doc.status || "Draft";
+	const access = frm.doc.company_access || "Active";
 	const color =
-		status === "Active"
+		status === "Active" && access === "Suspended"
+			? "var(--orange-500)"
+			: status === "Active"
 			? "var(--green-500)"
 			: status === "Failed"
 			? "var(--red-500)"
