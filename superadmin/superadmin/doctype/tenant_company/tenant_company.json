@@ -39,7 +39,7 @@
    "fieldname": "site_name",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "description": "FQDN for the new site, e.g. company1.local",
+   "description": "Type subdomain only (e.g. alnoor) — becomes alnoor.<Base Domain> from Superadmin Settings. Full FQDN still accepted.",
    "label": "Site Name",
    "reqd": 1,
    "unique": 1
@@ -103,7 +103,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Draft\nQueued\nProvisioning\nActive\nFailed",
+   "options": "Draft\nQueued\nProvisioning\nActive\nFailed\nDeleting",
    "read_only": 1
   },
   {

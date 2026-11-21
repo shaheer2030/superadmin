@@ -1,0 +1,120 @@
+{% extends "templates/web.html" %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block title %}تأكيد البريد — ORACPC{% endblock %}
+
+{% block page_content %}
+<div class="sa-portal">
+  <div class="sa-wrap">
+    <nav class="sa-nav">
+      <a class="sa-brand" href="/home"><span class="sa-brand-mark"></span>ORACPC</a>
+    </nav>
+    <div class="sa-form-shell">
+      <div class="sa-card">
+        <div class="sa-kicker">تأكيد البريد</div>
+        <h1 id="sa-title">جارٍ التحقق…</h1>
+        <p class="sa-lead" id="sa-verify-status">نتحقق من رابط التأكيد ونبدأ إنشاء الحساب.</p>
+        <div class="sa-progress-wrap show" id="sa-progress-view">
+          <div class="sa-progress-head">
+            <span id="sa-stage">بدء العملية…</span>
+            <strong id="sa-percent">5%</strong>
+          </div>
+          <div class="sa-progress-track"><div class="sa-progress-bar" id="sa-bar" style="width:5%"></div></div>
+          <div class="sa-progress-meta" id="sa-progress-meta"></div>
+          <div class="sa-steps" style="margin-top:1rem">
+            <div class="sa-step" data-step="register"><span class="dot"></span><span>تأكيد البريد</span></div>
+            <div class="sa-step" data-step="provision"><span class="dot"></span><span>إنشاء الموقع والتطبيقات</span></div>
+            <div class="sa-step" data-step="ssl"><span class="dot"></span><span>تفعيل شهادة SSL</span></div>
+            <div class="sa-step" data-step="ready"><span class="dot"></span><span>جاهز لتسجيل الدخول</span></div>
+          </div>
+        </div>
+        <div id="sa-alert" class="sa-alert" style="margin-top:1rem"></div>
+        <a class="sa-btn sa-btn-ghost" href="/home" style="margin-top:0.8rem">العودة للرئيسية</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+frappe.ready(function () {
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token") || "";
+  const alertBox = document.getElementById("sa-alert");
+  let pollTimer = null;
+  function setStep(name) {
+    document.querySelectorAll(".sa-step").forEach(function (el) {
+      el.classList.remove("active", "done");
+      const order = ["register", "provision", "ssl", "ready"];
+      const cur = order.indexOf(name);
+      const mine = order.indexOf(el.getAttribute("data-step"));
+      if (mine < cur) el.classList.add("done");
+      if (mine === cur) el.classList.add("active");
+    });
+  }
+  function setProgress(percent, stage, meta) {
+    document.getElementById("sa-percent").textContent = Math.round(percent) + "%";
+    document.getElementById("sa-bar").style.width = Math.max(0, Math.min(100, percent)) + "%";
+    document.getElementById("sa-stage").textContent = stage || "";
+    document.getElementById("sa-progress-meta").textContent = meta || "";
+  }
+  function goLogin(email, siteName) {
+    const q = new URLSearchParams();
+    if (email) q.set("email", email);
+    if (siteName) q.set("site", siteName);
+    q.set("ready", "1");
+    location.href = "/portal-login?" + q.toString();
+  }
+  function pollProgress(signup, tenantCompany) {
+    const tick = function () {
+      frappe.call({
+        method: "superadmin.signup_api.get_provision_progress",
+        args: { signup: signup || "", tenant_company: tenantCompany || "" },
+        callback: function (r) {
+          if (r.exc) return;
+          const m = r.message || {};
+          setProgress(m.percent || 0, m.stage || "", m.site_name ? ("الموقع: " + m.site_name) : "");
+          if (m.step) setStep(m.step);
+          if (m.failed) {
+            document.getElementById("sa-title").textContent = "فشل الإنشاء";
+            alertBox.className = "sa-alert show sa-alert-err";
+            alertBox.textContent = "تعذر إكمال إنشاء الحساب.";
+            if (pollTimer) clearInterval(pollTimer);
+            return;
+          }
+          if (m.ready) {
+            document.getElementById("sa-title").textContent = "الحساب جاهز";
+            setStep("ready");
+            setProgress(100, "اكتمل الإنشاء — SSL مفعّل", m.site_url || "");
+            if (pollTimer) clearInterval(pollTimer);
+            setTimeout(function () { goLogin(m.admin_email, m.site_name); }, 1200);
+          }
+        }
+      });
+    };
+    tick();
+    pollTimer = setInterval(tick, 4000);
+  }
+  if (!token) {
+    document.getElementById("sa-title").textContent = "رابط غير صالح";
+    alertBox.className = "sa-alert show sa-alert-err";
+    alertBox.textContent = "لا يوجد رمز تأكيد في الرابط.";
+    return;
+  }
+  frappe.call({
+    method: "superadmin.signup_api.verify_signup_email",
+    args: { token: token },
+    callback: function (r) {
+      if (r.exc) {
+        document.getElementById("sa-title").textContent = "فشل التأكيد";
+        return;
+      }
+      const m = r.message || {};
+      document.getElementById("sa-title").textContent = "تم تأكيد البريد";
+      document.getElementById("sa-verify-status").textContent = m.message || "بدأ إنشاء الموقع.";
+      alertBox.className = "sa-alert show sa-alert-ok";
+      alertBox.textContent = "تم التحقق. جارٍ تجهيز موقع شركتك…";
+      pollProgress(m.signup, m.tenant_company);
+    }
+  });
+});
+</script>
+{% endblock %}

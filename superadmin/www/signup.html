@@ -1,0 +1,217 @@
+{% extends "templates/web.html" %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block title %}إنشاء حساب — ORACPC{% endblock %}
+
+{% block page_content %}
+<div class="sa-portal">
+  <div class="sa-wrap">
+    <nav class="sa-nav">
+      <a class="sa-brand" href="/home"><span class="sa-brand-mark"></span>ORACPC</a>
+      <div class="sa-nav-actions">
+        <a class="sa-btn sa-btn-ghost" href="/portal-login">تسجيل الدخول</a>
+      </div>
+    </nav>
+
+    <div class="sa-form-shell">
+      <div class="sa-card" id="sa-signup-card">
+        <div id="sa-form-view">
+          <div class="sa-kicker">حساب شركة جديد</div>
+          <h1>إنشاء حساب شركة</h1>
+          <p class="sa-lead" id="sa-mode-hint">أدخل بيانات شركتك للبدء</p>
+          <div id="sa-alert" class="sa-alert"></div>
+          <form id="sa-signup-form">
+            <div class="sa-field">
+              <label for="company_name">اسم الشركة *</label>
+              <input id="company_name" name="company_name" required maxlength="140" autocomplete="organization" />
+            </div>
+            <div class="sa-field">
+              <label for="site_label">اسم الموقع الفرعي *</label>
+              <input id="site_label" name="site_label" required maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9-]{1,38}[A-Za-z0-9]" placeholder="alnoor" />
+              <div class="sa-preview" id="sa-site-preview">—</div>
+              <div class="sa-hint">يُسمح بالأحرف الإنجليزية والأرقام والشرطة فقط.</div>
+            </div>
+            <div class="sa-field">
+              <label for="admin_email">البريد الإلكتروني للمسؤول *</label>
+              <input id="admin_email" name="admin_email" type="email" required autocomplete="email" />
+              <div class="sa-hint">يجب أن يكون فريدًا — يُستخدم لتوجيهك لاحقًا إلى دومين شركتك.</div>
+            </div>
+            <div class="sa-field">
+              <label for="admin_password">كلمة مرور المسؤول *</label>
+              <input id="admin_password" name="admin_password" type="password" required minlength="8" autocomplete="new-password" />
+            </div>
+            <button class="sa-btn sa-btn-primary sa-btn-block" type="submit" id="sa-submit">إنشاء الحساب</button>
+          </form>
+        </div>
+
+        <div id="sa-progress-view" class="sa-progress-wrap">
+          <div class="sa-kicker">جاري التجهيز</div>
+          <h1>إنشاء حسابك قيد التنفيذ</h1>
+          <p class="sa-lead">لا تغلق هذه الصفحة. سنخبرك عند اكتمال الإعداد.</p>
+          <div class="sa-progress-head">
+            <span id="sa-stage">بدء العملية…</span>
+            <strong id="sa-percent">0%</strong>
+          </div>
+          <div class="sa-progress-track"><div class="sa-progress-bar" id="sa-bar"></div></div>
+          <div class="sa-progress-meta" id="sa-progress-meta"></div>
+          <div class="sa-steps">
+            <div class="sa-step" data-step="register"><span class="dot"></span><span>تسجيل البيانات</span></div>
+            <div class="sa-step" data-step="provision"><span class="dot"></span><span>إنشاء الموقع والتطبيقات</span></div>
+            <div class="sa-step" data-step="ssl"><span class="dot"></span><span>تفعيل شهادة SSL</span></div>
+            <div class="sa-step" data-step="ready"><span class="dot"></span><span>جاهز لتسجيل الدخول</span></div>
+          </div>
+          <div id="sa-progress-alert" class="sa-alert" style="margin-top:1rem"></div>
+        </div>
+
+        <div id="sa-mail-view" class="sa-hidden">
+          <div class="sa-kicker">تأكيد البريد</div>
+          <h1>تحقق من بريدك الإلكتروني</h1>
+          <p class="sa-lead" id="sa-mail-text"></p>
+          <a class="sa-btn sa-btn-ghost" href="/portal-login">الذهاب لتسجيل الدخول</a>
+        </div>
+      </div>
+    </div>
+    <div class="sa-footer">© ORACPC</div>
+  </div>
+</div>
+<script>
+frappe.ready(function () {
+  const form = document.getElementById("sa-signup-form");
+  const alertBox = document.getElementById("sa-alert");
+  const preview = document.getElementById("sa-site-preview");
+  const modeHint = document.getElementById("sa-mode-hint");
+  const formView = document.getElementById("sa-form-view");
+  const progressView = document.getElementById("sa-progress-view");
+  const mailView = document.getElementById("sa-mail-view");
+  let baseDomain = "";
+  let pollTimer = null;
+
+  function showAlert(el, msg, kind) {
+    el.className = "sa-alert show sa-alert-" + (kind || "info");
+    el.textContent = msg;
+  }
+  function updatePreview() {
+    const label = (form.site_label.value || "").trim().toLowerCase();
+    preview.textContent = label && baseDomain ? (label + "." + baseDomain) : (baseDomain ? ("*." + baseDomain) : "—");
+  }
+  function setStep(name) {
+    document.querySelectorAll(".sa-step").forEach(function (el) {
+      el.classList.remove("active", "done");
+      const order = ["register", "provision", "ssl", "ready"];
+      const cur = order.indexOf(name);
+      const mine = order.indexOf(el.getAttribute("data-step"));
+      if (mine < cur) el.classList.add("done");
+      if (mine === cur) el.classList.add("active");
+    });
+  }
+  function showProgress() {
+    formView.classList.add("sa-hidden");
+    mailView.classList.add("sa-hidden");
+    progressView.classList.add("show");
+  }
+  function setProgress(percent, stage, meta) {
+    document.getElementById("sa-percent").textContent = Math.round(percent) + "%";
+    document.getElementById("sa-bar").style.width = Math.max(0, Math.min(100, percent)) + "%";
+    document.getElementById("sa-stage").textContent = stage || "";
+    document.getElementById("sa-progress-meta").textContent = meta || "";
+  }
+  function goLogin(email, siteName) {
+    const q = new URLSearchParams();
+    if (email) q.set("email", email);
+    if (siteName) q.set("site", siteName);
+    q.set("ready", "1");
+    location.href = "/portal-login?" + q.toString();
+  }
+  function pollProgress(signup, tenantCompany) {
+    showProgress();
+    setStep("provision");
+    const tick = function () {
+      frappe.call({
+        method: "superadmin.signup_api.get_provision_progress",
+        args: { signup: signup || "", tenant_company: tenantCompany || "" },
+        callback: function (r) {
+          if (r.exc) return;
+          const m = r.message || {};
+          setProgress(m.percent || 0, m.stage || "", m.site_name ? ("الموقع: " + m.site_name) : "");
+          if (m.step) setStep(m.step);
+          if (m.failed) {
+            showAlert(document.getElementById("sa-progress-alert"), "فشل الإنشاء. راجع الإدارة أو حاول لاحقًا.", "err");
+            if (pollTimer) clearInterval(pollTimer);
+            return;
+          }
+          if (m.ready) {
+            setStep("ready");
+            setProgress(100, "اكتمل الإنشاء — SSL مفعّل", m.site_url || "");
+            if (pollTimer) clearInterval(pollTimer);
+            setTimeout(function () { goLogin(m.admin_email, m.site_name); }, 1200);
+          }
+        }
+      });
+    };
+    tick();
+    pollTimer = setInterval(tick, 4000);
+  }
+
+  frappe.call({
+    method: "superadmin.signup_api.get_signup_options",
+    callback: function (r) {
+      const m = r.message || {};
+      baseDomain = m.base_domain || "";
+      modeHint.textContent = m.email_verification_mode === "Mandatory"
+        ? "سيتم إرسال رابط تأكيد إلى بريدك، ولن يُنشأ الحساب إلا بعد التأكيد."
+        : "سيبدأ إنشاء موقع شركتك مباشرة بعد التسجيل مع عرض تقدم العملية.";
+      updatePreview();
+    }
+  });
+
+  form.company_name.addEventListener("change", function () {
+    if ((form.site_label.value || "").trim()) return;
+    frappe.call({
+      method: "superadmin.signup_api.suggest_label",
+      args: { company_name: form.company_name.value },
+      callback: function (r) {
+        const label = (r.message || {}).site_label || "";
+        if (label) form.site_label.value = label;
+        updatePreview();
+      }
+    });
+  });
+  form.site_label.addEventListener("input", updatePreview);
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const btn = document.getElementById("sa-submit");
+    btn.disabled = true;
+    showAlert(alertBox, "جارٍ إرسال الطلب…", "info");
+    frappe.call({
+      method: "superadmin.signup_api.register_company",
+      args: {
+        company_name: form.company_name.value,
+        site_label: form.site_label.value,
+        admin_email: form.admin_email.value,
+        admin_password: form.admin_password.value,
+      },
+      callback: function (r) {
+        btn.disabled = false;
+        if (r.exc) return;
+        const m = r.message || {};
+        if (m.mode === "Mandatory") {
+          formView.classList.add("sa-hidden");
+          mailView.classList.remove("sa-hidden");
+          document.getElementById("sa-mail-text").textContent =
+            (m.message || "تحقق من بريدك") + (m.site_name ? (" — الموقع المتوقع: " + m.site_name) : "");
+          return;
+        }
+        setStep("register");
+        setProgress(8, "تم التسجيل، جاري إنشاء الموقع…", m.site_name || "");
+        pollProgress(m.signup, m.tenant_company);
+      },
+      error: function () {
+        btn.disabled = false;
+        showAlert(alertBox, "تعذر إنشاء الحساب. تحقق من البيانات وحاول مجددًا.", "err");
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

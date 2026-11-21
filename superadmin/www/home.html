@@ -1,0 +1,47 @@
+{% extends "templates/web.html" %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block title %}ORACPC — نظام إدارة الأعمال السحابي{% endblock %}
+
+{% block page_content %}
+<div class="sa-portal">
+  <div class="sa-wrap">
+    <nav class="sa-nav">
+      <a class="sa-brand" href="/home"><span class="sa-brand-mark"></span>ORACPC</a>
+      <div class="sa-nav-actions">
+        <a class="sa-btn sa-btn-ghost" href="/portal-login">تسجيل الدخول</a>
+        <a class="sa-btn sa-btn-primary" href="/signup">إنشاء حساب</a>
+      </div>
+    </nav>
+    <section class="sa-hero">
+      <div>
+        <div class="sa-kicker">منصة متعددة الشركات</div>
+        <h1>شغّل شركتك على السحابة خلال دقائق</h1>
+        <p>أنشئ حسابًا، احصل على دومين فرعي خاص، وابدأ المحاسبة والمبيعات والمخزون عبر ERPNext — بواجهة عربية وإعداد تلقائي.</p>
+        <div class="sa-nav-actions">
+          <a class="sa-btn sa-btn-primary" href="/signup">ابدأ الآن</a>
+          <a class="sa-btn sa-btn-ghost" href="/portal-login">لدي حساب بالفعل</a>
+        </div>
+      </div>
+      <aside class="sa-hero-panel">
+        <div>
+          <h2>ماذا يشمل حسابك؟</h2>
+          <ul>
+            <li>موقع مستقل لبيانات شركتك</li>
+            <li>دومين فرعي جاهز تلقائيًا</li>
+            <li>صلاحيات مسؤول كاملة</li>
+            <li>إعداد أولي بعد أول دخول</li>
+          </ul>
+        </div>
+        <div class="sa-panel-foot">بعد اكتمال الإنشاء ستنتقل لتسجيل الدخول وإكمال الإعداد.</div>
+      </aside>
+    </section>
+    <section class="sa-grid">
+      <div class="sa-card"><h3>إطلاق سريع</h3><p>نموذج واحد ثم متابعة التقدم حتى جاهزية الموقع.</p></div>
+      <div class="sa-card"><h3>عزل تام</h3><p>كل شركة على موقع وقاعدة بيانات منفصلة.</p></div>
+      <div class="sa-card"><h3>دخول ذكي</h3><p>أدخل بريدك ونوجّهك مباشرة إلى دومين شركتك.</p></div>
+    </section>
+    <div class="sa-footer">© ORACPC</div>
+  </div>
+</div>
+{% endblock %}

@@ -16,3 +16,14 @@ build/
 # Frappe
 *.pyc
 node_modules/
+
+# SSL / cleanup host-worker queues (runtime only)
+ssl-queue/**/*.req
+ssl-queue/**/*.del
+ssl-queue/**/*.ok
+ssl-queue/**/*.log
+ssl-queue/done/
+ssl-queue/failed/
+ssl-queue/active/
+ssl-queue/cleanup/done/
+ssl-queue/cleanup/failed/

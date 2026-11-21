@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "TS-.#####",
+ "creation": "2026-11-21 02:00:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "company_name",
+  "site_label",
+  "site_name",
+  "column_break_1",
+  "admin_email",
+  "admin_password",
+  "section_status",
+  "status",
+  "verification_token",
+  "verification_expires",
+  "tenant_company",
+  "provision_log"
+ ],
+ "fields": [
+  {
+   "fieldname": "company_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Company Name",
+   "reqd": 1
+  },
+  {
+   "description": "Subdomain label only, e.g. alnoor",
+   "fieldname": "site_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Site Label",
+   "reqd": 1
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Site Name",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "admin_email",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Administrator Email",
+   "options": "Email",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "admin_password",
+   "fieldtype": "Password",
+   "label": "Administrator Password",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_status",
+   "fieldtype": "Section Break",
+   "label": "Status"
+  },
+  {
+   "default": "Pending Verification",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending Verification\nVerified\nProvisioning\nActive\nFailed\nExpired",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verification_token",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Verification Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verification_expires",
+   "fieldtype": "Datetime",
+   "label": "Verification Expires",
+   "read_only": 1
+  },
+  {
+   "fieldname": "tenant_company",
+   "fieldtype": "Link",
+   "label": "Tenant Company",
+   "options": "Tenant Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "provision_log",
+   "fieldtype": "Long Text",
+   "label": "Log",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-21 02:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "name": "Tenant Signup",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

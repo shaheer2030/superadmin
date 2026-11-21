@@ -1,8 +1,8 @@
 [project]
 name = "superadmin"
 authors = [{ name = "Superadmin", email = "admin@example.com" }]
-description = "Central tenant provisioning for multi-site ERPNext"
-requires-python = ">=3.8"
+description = "Central tenant provisioning for multi-site Frappe/ERPNext (version-agnostic)"
+requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]
 dependencies = []

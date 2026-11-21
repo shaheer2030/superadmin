@@ -1,0 +1,77 @@
+{% extends "templates/web.html" %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block title %}تسجيل الدخول — ORACPC{% endblock %}
+
+{% block page_content %}
+<div class="sa-portal">
+  <div class="sa-wrap">
+    <nav class="sa-nav">
+      <a class="sa-brand" href="/home"><span class="sa-brand-mark"></span>ORACPC</a>
+      <div class="sa-nav-actions">
+        <a class="sa-btn sa-btn-primary" href="/signup">إنشاء حساب</a>
+      </div>
+    </nav>
+    <div class="sa-form-shell">
+      <div class="sa-card">
+        <div class="sa-kicker">بوابة الدخول</div>
+        <h1>تسجيل الدخول لشركتك</h1>
+        <p class="sa-lead" id="sa-login-lead">أدخل بريد المسؤول المسجّل لنوجّهك إلى دومين شركتك وإكمال إعداد الحساب.</p>
+        <div id="sa-alert" class="sa-alert"></div>
+        <form id="sa-login-form">
+          <div class="sa-field">
+            <label for="login_email">البريد الإلكتروني *</label>
+            <input id="login_email" name="admin_email" type="email" required autocomplete="username" />
+          </div>
+          <button class="sa-btn sa-btn-primary sa-btn-block" type="submit" id="sa-login-btn">متابعة إلى موقع الشركة</button>
+        </form>
+        <p class="sa-hint" style="margin-top:1rem" id="sa-site-hint"></p>
+      </div>
+    </div>
+    <div class="sa-footer">© ORACPC</div>
+  </div>
+</div>
+<script>
+frappe.ready(function () {
+  const form = document.getElementById("sa-login-form");
+  const alertBox = document.getElementById("sa-alert");
+  const params = new URLSearchParams(location.search);
+  const email = params.get("email") || "";
+  const site = params.get("site") || "";
+  const ready = params.get("ready") === "1";
+  if (email) form.admin_email.value = email;
+  if (ready) {
+    document.getElementById("sa-login-lead").textContent =
+      "تم إنشاء حساب شركتك بنجاح. أدخل بريدك للانتقال إلى موقع الشركة وإكمال الإعداد.";
+    alertBox.className = "sa-alert show sa-alert-ok";
+    alertBox.textContent = site ? ("موقعك جاهز: " + site) : "الحساب جاهز لتسجيل الدخول.";
+  }
+  if (site) document.getElementById("sa-site-hint").textContent = "الموقع المتوقع: https://" + site + "/login";
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const btn = document.getElementById("sa-login-btn");
+    btn.disabled = true;
+    frappe.call({
+      method: "superadmin.signup_api.resolve_login_portal",
+      args: { admin_email: form.admin_email.value },
+      callback: function (r) {
+        btn.disabled = false;
+        if (r.exc) return;
+        const m = r.message || {};
+        if (m.redirect_to) {
+          alertBox.className = "sa-alert show sa-alert-ok";
+          alertBox.textContent = "جارٍ التحويل إلى " + m.site_name;
+          location.href = m.redirect_to;
+        }
+      },
+      error: function () {
+        btn.disabled = false;
+        alertBox.className = "sa-alert show sa-alert-err";
+        alertBox.textContent = "تعذر العثور على شركة مرتبطة بهذا البريد.";
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
