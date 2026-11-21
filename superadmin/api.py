@@ -410,7 +410,7 @@ def _wait_for_tenant_ssl(doc, site_name: str, timeout: int = 600, poll_seconds: 
 
 		if status == "done":
 			_mark_ssl_active(site_name)
-			for _ in range(6):
+			for _attempt in range(6):
 				if _https_certificate_ok(site_name):
 					return _("SSL certificate active for {0}.").format(site_name)
 				time.sleep(2)
