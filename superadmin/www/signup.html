@@ -27,14 +27,22 @@
             </div>
             <div class="sa-field">
               <label for="site_label">اسم الموقع الفرعي *</label>
-              <input id="site_label" name="site_label" required maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9-]{1,38}[A-Za-z0-9]" placeholder="alnoor" />
+              <input id="site_label" name="site_label" required maxlength="40"
+                pattern="[A-Za-z0-9][A-Za-z0-9-]{1,38}[A-Za-z0-9]"
+                placeholder="alnoor"
+                lang="en"
+                dir="ltr"
+                spellcheck="false"
+                autocapitalize="none"
+                autocomplete="off"
+                inputmode="url"
+                title="English letters, numbers, and hyphens only" />
               <div class="sa-preview" id="sa-site-preview">—</div>
-              <div class="sa-hint">يُسمح بالأحرف الإنجليزية والأرقام والشرطة فقط.</div>
+              <div class="sa-hint">يُسمح بالأحرف الإنجليزية والأرقام والشرطة فقط. (مثال: alnoor)</div>
             </div>
             <div class="sa-field">
               <label for="admin_email">البريد الإلكتروني للمسؤول *</label>
               <input id="admin_email" name="admin_email" type="email" required autocomplete="email" />
-              <div class="sa-hint">يجب أن يكون فريدًا — يُستخدم لتوجيهك لاحقًا إلى دومين شركتك.</div>
             </div>
             <div class="sa-field">
               <label for="admin_password">كلمة مرور المسؤول *</label>
@@ -176,10 +184,54 @@ frappe.ready(function () {
       }
     });
   });
-  form.site_label.addEventListener("input", updatePreview);
+  function sanitizeSiteLabel(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-{2,}/g, "-")
+      .replace(/^-+/, "");
+  }
+
+  form.site_label.addEventListener("beforeinput", function (e) {
+    if (e.inputType && e.inputType.indexOf("insert") === 0 && e.data) {
+      if (/[^A-Za-z0-9-]/.test(e.data)) {
+        e.preventDefault();
+      }
+    }
+  });
+
+  form.site_label.addEventListener("input", function () {
+    const cleaned = sanitizeSiteLabel(form.site_label.value);
+    if (form.site_label.value !== cleaned) {
+      const pos = form.site_label.selectionStart;
+      form.site_label.value = cleaned;
+      try {
+        form.site_label.setSelectionRange(Math.max(0, (pos || 0) - 1), Math.max(0, (pos || 0) - 1));
+      } catch (err) {}
+    }
+    updatePreview();
+  });
+
+  form.site_label.addEventListener("paste", function (e) {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text") || "";
+    const cleaned = sanitizeSiteLabel(text);
+    const start = form.site_label.selectionStart || 0;
+    const end = form.site_label.selectionEnd || 0;
+    const cur = form.site_label.value || "";
+    form.site_label.value = sanitizeSiteLabel(cur.slice(0, start) + cleaned + cur.slice(end)).slice(0, 40);
+    updatePreview();
+  });
 
   form.addEventListener("submit", function (e) {
     e.preventDefault();
+    form.site_label.value = sanitizeSiteLabel(form.site_label.value);
+    updatePreview();
+    if (!/^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])?$/.test(form.site_label.value) || form.site_label.value.length < 3) {
+      showAlert(alertBox, "اسم الموقع الفرعي يجب أن يكون بالإنجليزية فقط (أحرف وأرقام وشرطة)، مثل: alnoor", "err");
+      form.site_label.focus();
+      return;
+    }
     const btn = document.getElementById("sa-submit");
     btn.disabled = true;
     showAlert(alertBox, "جارٍ إرسال الطلب…", "info");

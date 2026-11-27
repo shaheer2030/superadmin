@@ -195,6 +195,10 @@ def register_company(
 
 	if len(company_name) < 2:
 		frappe.throw(_("Company Name is required"))
+	if not re.fullmatch(r"[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])?", site_label or ""):
+		frappe.throw(
+			_("Subdomain must use English letters, numbers, and hyphens only (example: alnoor).")
+		)
 	if len(admin_password) < 8:
 		frappe.throw(_("Password must be at least 8 characters"))
 	if not get_default_server_ip():

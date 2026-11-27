@@ -145,6 +145,58 @@ def _run_bench_command(cmd: list, cwd: str, timeout: int = 3600) -> str:
 	return log
 
 
+# Full company-owner role set. System Manager alone does NOT grant ERPNext
+# module DocTypes (Sales Order, Bin, reports, …) — those need domain roles.
+TENANT_ADMIN_ROLES = (
+	"System Manager",
+	"Accounts Manager",
+	"Accounts User",
+	"Sales Manager",
+	"Sales User",
+	"Sales Master Manager",
+	"Purchase Manager",
+	"Purchase User",
+	"Purchase Master Manager",
+	"Stock Manager",
+	"Stock User",
+	"Item Manager",
+	"Manufacturing Manager",
+	"Manufacturing User",
+	"Projects Manager",
+	"Projects User",
+	"HR Manager",
+	"HR User",
+	"Quality Manager",
+	"Maintenance Manager",
+	"Maintenance User",
+	"Delivery Manager",
+	"Delivery User",
+	"Fleet Manager",
+	"Report Manager",
+	"Workspace Manager",
+	"Analytics",
+	"Auditor",
+)
+
+
+def _tenant_admin_roles() -> list:
+	"""Return roles that exist on the current site (skip missing custom roles)."""
+	available = set(frappe.get_all("Role", pluck="name", filters={"disabled": 0}))
+	return [role for role in TENANT_ADMIN_ROLES if role in available]
+
+
+def _ensure_tenant_admin_roles(user) -> None:
+	wanted = _tenant_admin_roles()
+	existing = {row.role for row in (user.get("roles") or [])}
+	added = False
+	for role in wanted:
+		if role not in existing:
+			user.append("roles", {"role": role})
+			added = True
+	if added or not existing:
+		user.save(ignore_permissions=True)
+
+
 def _configure_tenant_admin(site_name: str, admin_email: str, admin_pw: str, company_name: str):
 	def _inner():
 		frappe.set_user("Administrator")
@@ -153,6 +205,9 @@ def _configure_tenant_admin(site_name: str, admin_email: str, admin_pw: str, com
 			user = frappe.get_doc("User", admin_email)
 			user.enabled = 1
 			user.first_name = user.first_name or company_name or admin_email
+			if getattr(user, "user_type", None) != "System User":
+				user.user_type = "System User"
+			user.save(ignore_permissions=True)
 		else:
 			user = frappe.get_doc(
 				{
@@ -161,15 +216,13 @@ def _configure_tenant_admin(site_name: str, admin_email: str, admin_pw: str, com
 					"first_name": company_name or admin_email,
 					"enabled": 1,
 					"send_welcome_email": 0,
+					"user_type": "System User",
 					"roles": [{"role": "System Manager"}],
 				}
 			)
 			user.insert(ignore_permissions=True)
 
-		existing_roles = {role.role for role in user.get("roles")}
-		if "System Manager" not in existing_roles:
-			user.append("roles", {"role": "System Manager"})
-		user.save(ignore_permissions=True)
+		_ensure_tenant_admin_roles(user)
 
 		from frappe.utils.password import update_password
 
