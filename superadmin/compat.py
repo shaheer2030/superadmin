@@ -93,8 +93,25 @@ def connect_site(site_name: str) -> None:
 
 
 def with_site(site_name: str, fn: Callable[[], Any]) -> Any:
-	"""Run callable inside another site context, then restore the caller site."""
+	"""Run callable inside another site context, then restore the caller site.
+
+	Preserves HTTP request/session bits so desk `savedocs` can still commit after
+	tenant-site work (frappe.destroy() would otherwise drop frappe.local.request).
+	"""
 	management_site = getattr(getattr(frappe, "local", None), "site", None)
+	saved_request = getattr(frappe.local, "request", None)
+	saved_form_dict = getattr(frappe.local, "form_dict", None)
+	saved_user = None
+	try:
+		saved_user = frappe.session.user
+	except Exception:
+		saved_user = None
+	saved_flags = {}
+	try:
+		saved_flags = dict(frappe.local.flags or {})
+	except Exception:
+		saved_flags = {}
+
 	frappe.destroy()
 	try:
 		connect_site(site_name)
@@ -103,6 +120,19 @@ def with_site(site_name: str, fn: Callable[[], Any]) -> Any:
 		frappe.destroy()
 		if management_site:
 			connect_site(management_site)
+			if saved_request is not None:
+				frappe.local.request = saved_request
+			if saved_form_dict is not None:
+				frappe.local.form_dict = saved_form_dict
+			try:
+				frappe.local.flags.update(saved_flags)
+			except Exception:
+				pass
+			if saved_user:
+				try:
+					frappe.set_user(saved_user)
+				except Exception:
+					pass
 
 
 def new_site_extra_args() -> List[str]:

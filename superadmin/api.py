@@ -21,6 +21,7 @@ from superadmin.compat import (
 	new_site_extra_args,
 	with_site,
 )
+from superadmin.permissions import only_platform
 
 SITE_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9\-\.]*[a-z0-9]$", re.IGNORECASE)
 KEY = "superadmin_mariadb_root_password"
@@ -145,59 +146,90 @@ def _run_bench_command(cmd: list, cwd: str, timeout: int = 3600) -> str:
 	return log
 
 
-# Full company-owner role set. System Manager alone does NOT grant ERPNext
-# module DocTypes (Sales Order, Bin, reports, …) — those need domain roles.
-TENANT_ADMIN_ROLES = (
+# Baseline roles always granted to the tenant company owner (not module-specific).
+TENANT_ADMIN_BASE_ROLES = (
 	"System Manager",
-	"Accounts Manager",
-	"Accounts User",
-	"Sales Manager",
-	"Sales User",
-	"Sales Master Manager",
-	"Purchase Manager",
-	"Purchase User",
-	"Purchase Master Manager",
-	"Stock Manager",
-	"Stock User",
-	"Item Manager",
-	"Manufacturing Manager",
-	"Manufacturing User",
-	"Projects Manager",
-	"Projects User",
-	"HR Manager",
-	"HR User",
-	"Quality Manager",
-	"Maintenance Manager",
-	"Maintenance User",
-	"Delivery Manager",
-	"Delivery User",
-	"Fleet Manager",
 	"Report Manager",
 	"Workspace Manager",
 	"Analytics",
 	"Auditor",
+	"Delivery Manager",
+	"Delivery User",
+	"Fleet Manager",
+	"Item Manager",
 )
 
 
-def _tenant_admin_roles() -> list:
-	"""Return roles that exist on the current site (skip missing custom roles)."""
+def _tenant_admin_roles_for_plan(plan_name: str | None = None) -> list:
+	"""Roles for the tenant owner: System Manager + only plan-allowed module roles."""
+	from superadmin.entitlements import MODULE_ROLES, plan_enabled_modules, roles_for_allowed_modules
+
 	available = set(frappe.get_all("Role", pluck="name", filters={"disabled": 0}))
-	return [role for role in TENANT_ADMIN_ROLES if role in available]
+	if plan_name and frappe.db.exists("SaaS Plan", plan_name):
+		# Resolve on management site DB before with_site; plan_doc fields are plain data.
+		pass
+
+	# When called inside tenant site context, plan DocType may be absent — pass roles in.
+	wanted = set(TENANT_ADMIN_BASE_ROLES)
+	if plan_name:
+		# Prefer precomputed list from management site via roles_for_allowed_modules
+		try:
+			# If SaaS Plan exists here (management), use it; else caller should pass modules.
+			if frappe.db.exists("DocType", "SaaS Plan") and frappe.db.exists("SaaS Plan", plan_name):
+				allowed = plan_enabled_modules(frappe.get_doc("SaaS Plan", plan_name))
+				wanted = set(roles_for_allowed_modules(allowed))
+				wanted.update(TENANT_ADMIN_BASE_ROLES)
+		except Exception:
+			wanted.update(MODULE_ROLES.get("Accounts", []))
+			wanted.update(MODULE_ROLES.get("Selling", []))
+			wanted.update(MODULE_ROLES.get("Buying", []))
+			wanted.update(MODULE_ROLES.get("Stock", []))
+	else:
+		# Safe default = trial-like commercial core (no Manufacturing/CRM/HR/…)
+		for mod in ("Accounts", "Selling", "Buying", "Stock"):
+			wanted.update(MODULE_ROLES.get(mod, []))
+
+	return [role for role in sorted(wanted) if role in available]
 
 
-def _ensure_tenant_admin_roles(user) -> None:
-	wanted = _tenant_admin_roles()
-	existing = {row.role for row in (user.get("roles") or [])}
-	added = False
-	for role in wanted:
-		if role not in existing:
-			user.append("roles", {"role": role})
-			added = True
-	if added or not existing:
-		user.save(ignore_permissions=True)
+def _ensure_tenant_admin_roles(user, plan_name: str | None = None, allowed_roles: list | None = None) -> None:
+	wanted = list(allowed_roles) if allowed_roles is not None else _tenant_admin_roles_for_plan(plan_name)
+	wanted_set = set(wanted)
+	# Replace module roles rather than only appending (downgrade-safe).
+	keep = []
+	for row in user.get("roles") or []:
+		# Keep System Manager and any still-wanted role; drop blocked-module roles.
+		if row.role in wanted_set or row.role == "System Manager":
+			keep.append(row.role)
+	user.set("roles", [])
+	for role in sorted(set(keep) | wanted_set):
+		user.append("roles", {"role": role})
+	user.flags.ignore_permissions = True
+	user.save()
 
 
-def _configure_tenant_admin(site_name: str, admin_email: str, admin_pw: str, company_name: str):
+def _configure_tenant_admin(
+	site_name: str,
+	admin_email: str,
+	admin_pw: str,
+	company_name: str,
+	plan_name: str | None = None,
+):
+	"""Create the plan-gated company admin. Tenant must use admin_email — not Administrator."""
+	from superadmin.entitlements import (
+		lock_tenant_root_administrator,
+		plan_enabled_modules,
+		roles_for_allowed_modules,
+	)
+
+	# Resolve allowed roles on the management site (SaaS Plan lives here).
+	allowed_roles = None
+	if plan_name and frappe.db.exists("SaaS Plan", plan_name):
+		allowed_roles = roles_for_allowed_modules(plan_enabled_modules(frappe.get_doc("SaaS Plan", plan_name)))
+		for base in TENANT_ADMIN_BASE_ROLES:
+			if base not in allowed_roles:
+				allowed_roles.append(base)
+
 	def _inner():
 		frappe.set_user("Administrator")
 
@@ -222,11 +254,16 @@ def _configure_tenant_admin(site_name: str, admin_email: str, admin_pw: str, com
 			)
 			user.insert(ignore_permissions=True)
 
-		_ensure_tenant_admin_roles(user)
+		# Filter roles by plan (exists check is on tenant Role list).
+		available = set(frappe.get_all("Role", pluck="name", filters={"disabled": 0}))
+		roles = [r for r in (allowed_roles or _tenant_admin_roles_for_plan(None)) if r in available]
+		_ensure_tenant_admin_roles(user, allowed_roles=roles)
 
 		from frappe.utils.password import update_password
 
 		update_password(admin_email, admin_pw)
+		# Invalidate root Administrator login for the tenant (permission bypass account).
+		lock_tenant_root_administrator()
 		frappe.db.commit()
 
 	with_site(site_name, _inner)
@@ -318,11 +355,25 @@ def _ssl_req_basename(site_name: str) -> str:
 	return f"{(site_name or '').strip().lower()}.req"
 
 
+def get_base_domain_from_settings() -> str:
+	from superadmin.superadmin.doctype.superadmin_settings.superadmin_settings import get_base_domain
+
+	return (get_base_domain() or "oracpc.tech").strip().lower().rstrip(".")
+
+
+def get_protected_sites() -> frozenset:
+	base = get_base_domain_from_settings()
+	return frozenset({base, f"www.{base}"})
+
+
 def _ssl_is_applicable(site_name: str) -> bool:
 	site_name = (site_name or "").strip().lower()
-	if not site_name.endswith(".oracpc.tech") or site_name.count(".") < 2:
+	base = get_base_domain_from_settings()
+	if not base:
 		return False
-	if site_name == "oracpc.tech" or site_name.startswith("www."):
+	if not site_name.endswith(f".{base}") or site_name.count(".") < 2:
+		return False
+	if site_name == base or site_name.startswith("www."):
 		return False
 	return True
 
@@ -393,7 +444,7 @@ def _queue_tenant_ssl(site_name: str) -> str:
 	if not _ssl_is_applicable(site_name):
 		if site_name == "oracpc.tech" or site_name.startswith("www."):
 			return _("SSL skipped: management hostname.")
-		return _("SSL skipped: Site Name is not a subdomain of oracpc.tech.")
+		return _("SSL skipped: Site Name is not a subdomain of {0}.").format(get_base_domain_from_settings())
 	queue_dir = _ssl_queue_dir()
 	try:
 		os.makedirs(queue_dir, exist_ok=True)
@@ -480,7 +531,7 @@ def _wait_for_tenant_ssl(doc, site_name: str, timeout: int = 600, poll_seconds: 
 
 @frappe.whitelist()
 def create_tenant_site(docname: str):
-	frappe.only_for("System Manager")
+	only_platform("Platform Admin")
 
 	doc = frappe.get_doc("Tenant Company", docname)
 	if doc.status == "Active":
@@ -613,7 +664,37 @@ def _provision_job(docname: str):
 					log_text="--- install-app {0} ---\n{1}".format(app_name, app_log),
 				)
 
-		_configure_tenant_admin(site_name, admin_email, admin_pw, company_name)
+		_configure_tenant_admin(
+			site_name,
+			admin_email,
+			admin_pw,
+			company_name,
+			plan_name=(doc.plan or "").strip() or None,
+		)
+		# Keep Setup Wizard, but hide industry + module picker (plan controls modules).
+		try:
+			from superadmin.superadmin.doctype.system_branding.system_branding import (
+				ensure_tenant_saas_js,
+			)
+
+			ensure_tenant_saas_js(site_name)
+			_set_progress(
+				doc,
+				88,
+				_("Preparing desk"),
+				log_text=_("Injected SaaS Setup Wizard patch (hide industry/modules; plan is source of truth)."),
+			)
+		except Exception:
+			frappe.log_error(title="superadmin inject setup wizard saas js")
+		# Apply plan entitlements (Module Profile) even before wizard finishes
+		try:
+			plan_code = (doc.plan or "").strip()
+			if plan_code and frappe.db.exists("SaaS Plan", plan_code):
+				from superadmin.entitlements import apply_entitlements_to_site
+
+				apply_entitlements_to_site(site_name, frappe.get_doc("SaaS Plan", plan_code))
+		except Exception:
+			frappe.log_error(title="superadmin entitlements after setup")
 		try:
 			from superadmin.superadmin.doctype.system_branding.system_branding import (
 				apply_branding_to_site,
@@ -626,7 +707,7 @@ def _provision_job(docname: str):
 		doc = frappe.get_doc("Tenant Company", docname)
 		_set_progress(
 			doc,
-			86,
+			92,
 			_("Preparing SSL"),
 			log_text=_("Created administrator user {0} on {1}.").format(admin_email, site_name),
 		)
@@ -640,6 +721,38 @@ def _provision_job(docname: str):
 			log_text=ssl_note,
 			company_access="Active",
 		)
+		if not frappe.db.exists("SaaS Subscription", {"tenant_company": docname}):
+			doc = frappe.get_doc("Tenant Company", docname)
+			default_plan = (doc.plan or "").strip() or None
+			if not default_plan:
+				plans = frappe.get_all(
+					"SaaS Plan",
+					filters={"is_public": 1, "is_active": 1, "is_free": 1},
+					pluck="name",
+					order_by="sort_order asc",
+					limit_page_length=1,
+				)
+				default_plan = plans[0] if plans else None
+			if not default_plan:
+				plans = frappe.get_all(
+					"SaaS Plan",
+					filters={"is_public": 1, "is_active": 1, "trial_days": [">", 0]},
+					pluck="name",
+					order_by="sort_order asc",
+					limit_page_length=1,
+				)
+				default_plan = plans[0] if plans else None
+			if default_plan:
+				try:
+					from superadmin.subscription import create_subscription_for_tenant
+
+					create_subscription_for_tenant(
+						docname,
+						default_plan,
+						billing_email=admin_email,
+					)
+				except Exception:
+					frappe.log_error(title="superadmin auto subscription after provision")
 	except Exception:
 		doc.reload()
 		_set_progress(
@@ -649,17 +762,23 @@ def _provision_job(docname: str):
 			status="Failed",
 			log_text="--- exception ---\n" + frappe.get_traceback(),
 		)
+		try:
+			from superadmin import notifications
+
+			notifications.notify_event(
+				"provision_failed",
+				{"tenant_company": docname, "site_name": site_name, "admin_email": admin_email},
+			)
+		except Exception:
+			pass
 		raise
-
-
-PROTECTED_SITES = frozenset({"oracpc.tech", "www.oracpc.tech"})
 
 
 def _assert_deletable_site_name(site_name: str) -> str:
 	site_name = (site_name or "").strip().lower()
 	if not site_name:
 		frappe.throw(_("Site Name is required for deletion."))
-	if site_name in PROTECTED_SITES:
+	if site_name in get_protected_sites():
 		frappe.throw(_("Refusing to delete protected management site: {0}").format(site_name))
 	management = (getattr(getattr(frappe, "local", None), "site", None) or "").strip().lower()
 	if management and site_name == management:
@@ -728,7 +847,7 @@ def _delete_related_tenant_signups(
 @frappe.whitelist()
 def delete_tenant_company(docname: str, confirm_site_name: Optional[str] = None):
 	"""Permanently destroy tenant site + DB + queue host cleanup, then delete the DocType row."""
-	frappe.only_for("System Manager")
+	only_platform("Platform Admin")
 
 	doc = frappe.get_doc("Tenant Company", docname)
 	if doc.status in ("Queued", "Provisioning", "Deleting"):
@@ -799,6 +918,40 @@ def _delete_job(docname: str):
 			pass
 
 		if _site_exists(site_name):
+			from superadmin import backup
+
+			_set_progress(
+				doc,
+				20,
+				_("Pre-delete backup"),
+				log_text=_("Running synchronous pre-delete backup for {0}.").format(site_name),
+			)
+			backup_job = backup.enqueue_site_backup(
+				site_name,
+				backup_type="Pre-Delete",
+				tenant_company=docname,
+				run_sync=True,
+			)
+			ok = backup.wait_for_backup(backup_job, timeout=60)
+			if not ok:
+				if not frappe.conf.get("superadmin_allow_delete_without_backup"):
+					raise RuntimeError(
+						_("Pre-delete backup failed. Set superadmin_allow_delete_without_backup to force delete.")
+					)
+				_set_progress(
+					doc,
+					25,
+					_("Backup failed — override"),
+					log_text=_("Continuing delete without backup (superadmin_allow_delete_without_backup)."),
+				)
+			else:
+				_set_progress(
+					doc,
+					28,
+					_("Backup complete"),
+					log_text=_("Pre-delete backup job {0} succeeded.").format(backup_job),
+				)
+
 			root_pw, root_pw_source = _resolve_mariadb_root_password()
 			drop_cmd = _build_drop_site_command(bench, site_name, root_pw)
 			_set_progress(

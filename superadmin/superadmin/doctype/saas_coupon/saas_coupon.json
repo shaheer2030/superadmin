@@ -1,0 +1,144 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-11-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "allow_rename": 0,
+ "autoname": "field:code",
+ "default_view": "List",
+ "field_order": [
+  "code",
+  "is_active",
+  "discount_type",
+  "column_break_1",
+  "discount_percent",
+  "discount_amount",
+  "section_validity",
+  "valid_from",
+  "valid_to",
+  "max_uses",
+  "used_count",
+  "applicable_plans"
+ ],
+ "fields": [
+  {
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "discount_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Discount Type",
+   "options": "Percent\nAmount",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discount_percent",
+   "fieldtype": "Percent",
+   "label": "Discount Percent"
+  },
+  {
+   "fieldname": "discount_amount",
+   "fieldtype": "Currency",
+   "label": "Discount Amount"
+  },
+  {
+   "fieldname": "section_validity",
+   "fieldtype": "Section Break",
+   "label": "Validity"
+  },
+  {
+   "fieldname": "valid_from",
+   "fieldtype": "Datetime",
+   "label": "Valid From"
+  },
+  {
+   "fieldname": "valid_to",
+   "fieldtype": "Datetime",
+   "label": "Valid To"
+  },
+  {
+   "fieldname": "max_uses",
+   "fieldtype": "Int",
+   "label": "Max Uses"
+  },
+  {
+   "default": "0",
+   "fieldname": "used_count",
+   "fieldtype": "Int",
+   "label": "Used Count",
+   "read_only": 1
+  },
+  {
+   "description": "Comma-separated plan codes; empty means all plans.",
+   "fieldname": "applicable_plans",
+   "fieldtype": "Small Text",
+   "label": "Applicable Plans"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "name": "SaaS Coupon",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Billing",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  }
+ ],
+ "track_changes": 1
+}

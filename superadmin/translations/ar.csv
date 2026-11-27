@@ -1,0 +1,263 @@
+Access,الوصول
+Action,الإجراء
+Active,نشط
+Active tenants,المستأجرون النشطون
+Actor,المنفّذ
+Administrator Email,بريد المسؤول
+Administrator Password,كلمة مرور المسؤول
+Amount,مبلغ
+App Label,تسمية التطبيق
+App Name,اسم التطبيق
+Applicable Plans,الباقات المشمولة
+Apply VAT on SaaS invoices when creating platform billing documents.,تطبيق ضريبة القيمة المضافة على فواتير SaaS عند إنشاء مستندات فوترة المنصة.
+Apps are installed with bench. Modules live inside an installed app and are gated by Module Profile + roles.,التطبيقات تُثبَّت عبر bench. الوحدات داخل تطبيق مثبت وتُقيَّد عبر Module Profile والأدوار.
+Archived,مؤرشف
+Assigned To,مسند إلى
+Auto Renew,تجديد تلقائي
+Backup Included,يشمل النسخ الاحتياطي
+Backup Retention (days),مدة الاحتفاظ بالنسخ (أيام)
+Backup Type,نوع النسخة
+Backups 7d failed,نسخ فاشلة (7 أيام)
+Backups 7d success,نسخ ناجحة (7 أيام)
+Base Domain,النطاق الأساسي
+Billing,الفوترة
+Billing Email,بريد الفوترة
+Billing Period,فترة الفوترة
+Cancel at Period End,إلغاء عند نهاية الفترة
+Cancelled,ملغى
+Cancelled On,تاريخ الإلغاء
+Closed,مغلق
+Code,الرمز
+Comma-separated plan codes; empty means all plans.,رموز باقات مفصولة بفواصل؛ فارغ يعني كل الباقات.
+Community,مجتمعي
+Company access,وصول الشركة
+Company Name,اسم الشركة
+Contact,التواصل
+Contact Email,بريد التواصل
+Contact Phone,هاتف التواصل
+Content,المحتوى
+Coupon,كوبون
+Currency,العملة
+Current Period End,نهاية الفترة الحالية
+Current Period Start,بداية الفترة الحالية
+Current Stage,المرحلة الحالية
+Dedicated,مخصص
+Default Install apps,التطبيقات الافتراضية
+Default Server IP (for hosts file),IP الخادم الافتراضي
+Defaults for new Tenant Company,افتراضيات الشركات الجديدة
+Delete on-disk tenant backups older than this many days (scheduled daily).,حذف ملفات النسخ الاحتياطية الأقدم من هذا العدد من الأيام (مجدول يوميًا).
+Deleting,جارٍ الحذف
+Description,الوصف
+Detail,التفاصيل
+Details,التفاصيل
+Disabled,معطّل
+Discount Amount,مبلغ الخصم
+Discount Percent,نسبة الخصم
+Discount Type,نوع الخصم
+Domain,النطاق
+Draft,مسودة
+Due Date,تاريخ الاستحقاق
+Email verification,التحقق من البريد
+Enabled,مفعّل
+Endpoint URL,رابط النهاية
+Entitlement Catalog,كتالوج الاستحقاقات
+ERPNext Modules,وحدات ERPNext
+ERPNext Modules (enable/block),وحدات ERPNext (تفعيل/حظر)
+ERPNext Sales Invoice,فاتورة مبيعات ERPNext
+Expired,منتهي
+Failed,فشل
+FAQ HTML,الأسئلة الشائعة (HTML)
+Feature Key,مفتاح الميزة
+Feature Label,تسمية الميزة
+Features,المميزات
+Features / Add-ons,المميزات / الإضافات
+Features HTML,محتوى المميزات (HTML)
+File Path,مسار الملف
+Fill Default Modules,تعبئة الوحدات الافتراضية
+Finished On,انتهى في
+Footer HTML,تذييل الصفحة (HTML)
+Frappe Apps,تطبيقات Frappe
+Frappe Apps (install),تطبيقات Frappe (تثبيت)
+From Name,اسم المرسل
+Generated at,تم التوليد في
+Grace,سماح
+Grace Days,أيام السماح
+Grace Until,السماح حتى
+Hero,القسم الرئيسي
+Hero CTA Label,نص زر الإجراء
+Hero Subtitle,العنوان الفرعي
+Hero Title,عنوان القسم الرئيسي
+High,مرتفع
+Hosts file (Windows),ملف hosts (ويندوز)
+Hosts File Entry,سطر ملف hosts
+In Progress,قيد المعالجة
+Install Apps,التطبيقات المثبتة
+Install apps,التطبيقات المراد تثبيتها
+Install Apps (legacy),التطبيقات المثبتة (قديم)
+Install on Tenant,تثبيت على المستأجر
+Instructions,التعليمات
+IP Address,عنوان IP
+Is Active,نشط
+Is Default,افتراضي
+Is Free,مجاني
+Is Public,عام / منشور
+Limit Value,قيمة الحد
+Limits,الحدود
+Load Catalog (Apps vs Modules),تحميل الكتالوج (تطبيقات مقابل وحدات)
+Log,السجل
+Low,منخفض
+Mandatory,إلزامي
+Manual,يدوي
+Max API Requests / Day,أقصى طلبات API / يوم
+Max Branches,أقصى فروع
+Max Companies,أقصى شركات
+Max Storage (MB),أقصى تخزين (ميجابايت)
+Max Users,أقصى مستخدمين
+Max Uses,أقصى استخدامات
+Medium,متوسط
+Metric,المؤشر
+Module Label,تسمية الوحدة
+Module Name,اسم الوحدة
+Monthly,شهري
+Monthly Price,السعر الشهري
+Multi-server orchestration deferred; single Free Tier node.,تنسيق تعدد السيرفرات مؤجل؛ عقدة واحدة على Free Tier.
+Next Billing Date,تاريخ الفوترة التالي
+Node Name,اسم العقدة
+Notes,ملاحظات
+One-time,مرة واحدة
+Open,مفتوح
+Open support tickets,تذاكر دعم مفتوحة
+Operations & Tax,التشغيل والضريبة
+Optional,اختياري
+Output,المخرجات
+Paid,مدفوعة
+Paid On,تاريخ الدفع
+Past Due,متأخر
+Pending Verification,بانتظار التحقق
+Percent,نسبة
+Plan,الباقة
+Plan Apps,تطبيقات الباقة
+Plan Code,رمز الباقة
+Plan Modules,وحدات الباقة
+Plan Name,اسم الباقة
+Platform Admin,مدير المنصة
+Platform Audit Log,سجل تدقيق المنصة
+Platform Billing,فوترة المنصة
+Platform Ops,تشغيل المنصة
+Platform Support,دعم المنصة
+Platform Support Ticket,تذكرة دعم المنصة
+Platform VAT registration number (Saudi Arabia).,الرقم الضريبي للمنصة (المملكة العربية السعودية).
+Portal,البوابة
+Portal Content,محتوى البوابة
+Pre-Delete,قبل الحذف
+Price,السعر
+Priority,الأولوية
+Production (requires approval),إنتاجي (يتطلب موافقة)
+Progress,التقدم
+Progress Percent,نسبة التقدم
+Provision Log,سجل التهيئة
+Provisioning,التهيئة
+Public signup & email verification,التسجيل العام والتحقق من البريد
+Queued,في الطابور
+Raised By,مقدم الطلب
+References,مراجع
+Refunded,مستردة
+Renewal & Grace,التجديد والسماح
+Replace existing plan modules?,استبدال وحدات الباقة الحالية؟
+Resolution,الحل
+Resolution Notes,ملاحظات الحل
+Resolved,تم الحل
+Running,قيد التشغيل
+SaaS,SaaS
+SaaS Coupon,كوبون SaaS
+SaaS Invoice,فاتورة SaaS
+SaaS Overview,نظرة عامة على SaaS
+SaaS Plan,باقة SaaS
+SaaS Plan Feature,ميزة الباقة
+SaaS Subscription,اشتراك SaaS
+Sandbox Ready,جاهز للتجربة (Sandbox)
+Scheduled,مجدول
+Script report — SaaS platform metrics.,تقرير سكربت — مؤشرات منصة SaaS.
+Server IP (for hosts file),IP الخادم (لملف hosts)
+Server Node,عقدة الخادم
+Server Node (مؤجل),عقدة الخادم (مؤجل)
+Show Plans Section,إظهار قسم الباقات
+Site Label,تسمية النطاق الفرعي
+Site Name,اسم الموقع
+SMTP (required when verification is Mandatory),SMTP (مطلوب عند التحقق الإلزامي)
+SMTP Email,بريد SMTP
+SMTP Password,كلمة مرور SMTP
+SMTP Port,منفذ SMTP
+SMTP Server,خادم SMTP
+Sort Order,ترتيب العرض
+Source App,التطبيق المصدر
+Standard,قياسي
+Start Date,تاريخ البدء
+Started On,بدأ في
+Status,الحالة
+Subject,الموضوع
+Subscription,الاشتراك
+Subscriptions — Active,اشتراكات — نشط
+Subscriptions — Cancelled,اشتراكات — ملغى
+Subscriptions — Expired,اشتراكات — منتهي
+Subscriptions — Grace,اشتراكات — سماح
+Subscriptions — Past Due,اشتراكات — متأخر
+Subscriptions — Suspended,اشتراكات — موقوف
+Subscriptions — Trial,اشتراكات — تجريبي
+Subscriptions — {0},اشتراكات — {0}
+Success,نجاح
+Superadmin,المشرف العام
+Superadmin Settings,إعدادات المشرف العام
+Support Level,مستوى الدعم
+Suspended,موقوف
+Suspended sites show the maintenance page. Use toolbar buttons to change.,المواقع الموقوفة تعرض صفحة الصيانة. استخدم أزرار الشريط لتغيير الحالة.
+Suspended tenants,المستأجرون الموقوفون
+System Branding,هوية النظام
+Target DocType,نوع المستند المستهدف
+Target Name,اسم المستند المستهدف
+Tenant Backup Job,نسخة احتياطية للمستأجر
+Tenant Company,شركة مستأجرة
+Tenant Signup,تسجيل مستأجر
+Trial,تجريبي
+Trial Days,أيام التجربة
+Trial End,نهاية التجربة
+Unpaid,غير مدفوعة
+Unpaid invoices total (SAR),إجمالي الفواتير غير المدفوعة (ر.س)
+Urgent,عاجل
+Use SSL,استخدام SSL
+Use TLS,استخدام TLS
+Used Count,مرات الاستخدام
+Valid From,صالح من
+Valid To,صالح إلى
+Validity,الصلاحية
+Value,القيمة
+VAT / Tax Number,الرقم الضريبي
+VAT Enabled,تفعيل ضريبة القيمة المضافة
+VAT Rate %,نسبة الضريبة %
+Verification Expires,انتهاء رابط التحقق
+Verification Token,رمز التحقق
+Verified,تم التحقق
+Waiting Customer,بانتظار العميل
+Yearly,سنوي
+Yearly Price,السعر السنوي
+ZATCA e-invoicing readiness flag. Production submission needs separate approval and credentials.,جاهزية الفوترة الإلكترونية. الإرسال الإنتاجي يتطلب موافقة وبيانات اعتماد منفصلة.
+ZATCA Mode,وضع الفوترة الإلكترونية (ZATCA)
+إظهار غير المضمّنة فقط,إظهار غير المضمّنة فقط
+إلغاء الكل,إلغاء الكل
+اختر التطبيقات,اختر التطبيقات
+اختر الوحدات,اختر الوحدات
+اختيار تطبيقات Frappe للتثبيت,اختيار تطبيقات Frappe للتثبيت
+اختيار وحدات ERPNext للباقة,اختيار وحدات ERPNext للباقة
+الاشتراكات,الاشتراكات
+الباقة,الباقة
+الدعم الفني,الدعم الفني
+الفواتير,الفواتير
+النسخ الاحتياطي,النسخ الاحتياطي
+باقات الاشتراك,باقات الاشتراك
+تحديد الكل,تحديد الكل
+تطبيق على الباقة,تطبيق على الباقة
+سجل التدقيق,سجل التدقيق
+عقدة الخادم (مؤجل),عقدة الخادم (مؤجل)
+غير مضمّن,غير مضمّن
+غير مضمّنة,غير مضمّنة
+محتوى الموقع,محتوى الموقع

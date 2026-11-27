@@ -15,6 +15,10 @@
   "admin_email",
   "admin_password",
   "install_apps",
+  "section_saas",
+  "subscription",
+  "plan",
+  "archived",
   "section_provisioning",
   "progress_bar",
   "progress_percent",
@@ -72,6 +76,30 @@
    "fieldname": "install_apps",
    "fieldtype": "Small Text",
    "label": "Install apps"
+  },
+  {
+   "fieldname": "section_saas",
+   "fieldtype": "Section Break",
+   "label": "SaaS"
+  },
+  {
+   "fieldname": "subscription",
+   "fieldtype": "Link",
+   "label": "Subscription",
+   "options": "SaaS Subscription",
+   "read_only": 1
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "label": "Plan",
+   "options": "SaaS Plan"
+  },
+  {
+   "default": "0",
+   "fieldname": "archived",
+   "fieldtype": "Check",
+   "label": "Archived"
   },
   {
    "description": "After Save, use the **Create Site** button on this form. Status and log fill when the background worker runs (`bench worker` must be running).",

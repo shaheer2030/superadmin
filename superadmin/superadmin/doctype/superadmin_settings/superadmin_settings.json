@@ -9,6 +9,12 @@
   "section_defaults",
   "default_server_ip",
   "default_install_apps",
+  "default_country",
+  "default_currency",
+  "column_break_region",
+  "default_language",
+  "default_timezone",
+  "default_chart_of_accounts",
   "section_signup",
   "email_verification_mode",
   "section_smtp",
@@ -19,7 +25,13 @@
   "smtp_password",
   "smtp_use_tls",
   "smtp_use_ssl",
-  "smtp_from_name"
+  "smtp_from_name",
+  "section_ops",
+  "backup_retention_days",
+  "vat_enabled",
+  "vat_rate",
+  "vat_number",
+  "zatca_mode"
  ],
  "fields": [
   {
@@ -52,6 +64,42 @@
    "fieldname": "default_install_apps",
    "fieldtype": "Small Text",
    "label": "Default Install apps"
+  },
+  {
+   "default": "Saudi Arabia",
+   "description": "Used to auto-complete the ERPNext Setup Wizard for new tenants (they skip the wizard).",
+   "fieldname": "default_country",
+   "fieldtype": "Data",
+   "label": "Default Country"
+  },
+  {
+   "default": "SAR",
+   "fieldname": "default_currency",
+   "fieldtype": "Data",
+   "label": "Default Currency"
+  },
+  {
+   "fieldname": "column_break_region",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "العربية",
+   "description": "Language name as in Language DocType (e.g. العربية or English).",
+   "fieldname": "default_language",
+   "fieldtype": "Data",
+   "label": "Default Language"
+  },
+  {
+   "default": "Asia/Riyadh",
+   "fieldname": "default_timezone",
+   "fieldtype": "Data",
+   "label": "Default Timezone"
+  },
+  {
+   "default": "Standard",
+   "fieldname": "default_chart_of_accounts",
+   "fieldtype": "Data",
+   "label": "Default Chart of Accounts"
   },
   {
    "fieldname": "section_signup",
@@ -130,6 +178,48 @@
    "fieldname": "smtp_from_name",
    "fieldtype": "Data",
    "label": "From Name"
+  },
+  {
+   "fieldname": "section_ops",
+   "fieldtype": "Section Break",
+   "label": "Operations & Tax"
+  },
+  {
+   "default": "14",
+   "description": "Delete on-disk tenant backups older than this many days (scheduled daily).",
+   "fieldname": "backup_retention_days",
+   "fieldtype": "Int",
+   "label": "Backup Retention (days)"
+  },
+  {
+   "default": "1",
+   "description": "Apply VAT on SaaS invoices when creating platform billing documents.",
+   "fieldname": "vat_enabled",
+   "fieldtype": "Check",
+   "label": "VAT Enabled"
+  },
+  {
+   "default": "15",
+   "depends_on": "vat_enabled",
+   "fieldname": "vat_rate",
+   "fieldtype": "Percent",
+   "label": "VAT Rate %"
+  },
+  {
+   "depends_on": "vat_enabled",
+   "description": "Platform VAT registration number (Saudi Arabia).",
+   "fieldname": "vat_number",
+   "fieldtype": "Data",
+   "label": "VAT / Tax Number"
+  },
+  {
+   "default": "Disabled",
+   "depends_on": "vat_enabled",
+   "description": "ZATCA e-invoicing readiness flag. Production submission needs separate approval and credentials.",
+   "fieldname": "zatca_mode",
+   "fieldtype": "Select",
+   "label": "ZATCA Mode",
+   "options": "Disabled\nSandbox Ready\nProduction (requires approval)"
   }
  ],
  "issingle": 1,
@@ -147,6 +237,16 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Platform Admin",
    "share": 1,
    "write": 1
   }

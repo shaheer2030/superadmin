@@ -12,7 +12,6 @@ from frappe import _
 from frappe.utils import get_url, now_datetime, validate_email_address
 
 from superadmin.superadmin.doctype.superadmin_settings.superadmin_settings import (
-	EMAIL_ACCOUNT_NAME,
 	expand_site_name,
 	get_base_domain,
 	get_default_install_apps,
@@ -122,27 +121,51 @@ def _assert_site_available(site_name: str) -> None:
 		frappe.throw(_("Site folder {0} already exists on the server.").format(site_name))
 
 
+def _resolve_signup_plan(plan_code: Optional[str]) -> Optional[str]:
+	code = (plan_code or "").strip()
+	if not code:
+		rows = frappe.get_all(
+			"SaaS Plan",
+			filters={"is_public": 1, "is_active": 1},
+			pluck="name",
+			order_by="sort_order asc",
+			limit_page_length=1,
+		)
+		return rows[0] if rows else None
+	if not frappe.db.exists("SaaS Plan", code):
+		frappe.throw(_("Selected plan is not available."))
+	row = frappe.db.get_value("SaaS Plan", code, ["is_active", "is_public"], as_dict=True)
+	if not row or not row.is_active or not row.is_public:
+		frappe.throw(_("Selected plan is not available."))
+	return code
+
+
 def _create_tenant_company_from_signup(signup) -> str:
 	server_ip = get_default_server_ip()
 	if not server_ip:
 		frappe.throw(_("Default Server IP is not set in Superadmin Settings."))
 	install_apps = get_default_install_apps() or "erpnext"
+	if signup.plan and frappe.db.exists("SaaS Plan", signup.plan):
+		plan_apps = frappe.db.get_value("SaaS Plan", signup.plan, "install_apps")
+		if (plan_apps or "").strip():
+			install_apps = plan_apps
 	password = signup.get_password("admin_password")
 	if not password:
 		frappe.throw(_("Administrator Password is missing."))
 
-	doc = frappe.get_doc(
-		{
-			"doctype": "Tenant Company",
-			"company_name": signup.company_name,
-			"site_name": signup.site_name,
-			"server_ip": server_ip,
-			"admin_email": signup.admin_email,
-			"admin_password": password,
-			"install_apps": install_apps,
-			"status": "Draft",
-		}
-	)
+	payload = {
+		"doctype": "Tenant Company",
+		"company_name": signup.company_name,
+		"site_name": signup.site_name,
+		"server_ip": server_ip,
+		"admin_email": signup.admin_email,
+		"admin_password": password,
+		"install_apps": install_apps,
+		"status": "Draft",
+	}
+	if signup.plan:
+		payload["plan"] = signup.plan
+	doc = frappe.get_doc(payload)
 	doc.insert(ignore_permissions=True)
 	frappe.db.commit()
 	return doc.name
@@ -207,16 +230,23 @@ def _send_verification_email(signup) -> None:
 	<p>{_("This link expires in {0} hours.").format(TOKEN_HOURS)}</p>
 	<p>{from_name}</p>
 	"""
-	# Prefer dedicated account if present
-	kwargs = {
-		"recipients": signup.admin_email,
-		"subject": subject,
-		"message": message,
-		"now": True,
-	}
-	if frappe.db.exists("Email Account", EMAIL_ACCOUNT_NAME):
-		kwargs["email_account"] = EMAIL_ACCOUNT_NAME
-	frappe.sendmail(**kwargs)
+	from superadmin.notifications import _outgoing_email_account
+
+	account = _outgoing_email_account()
+	if not account:
+		frappe.throw(
+			_(
+				"Could not send verification email. Set SMTP in Superadmin Settings "
+				"(or Tools > Email Account as default outgoing)."
+			)
+		)
+	frappe.sendmail(
+		recipients=signup.admin_email,
+		subject=subject,
+		message=message,
+		now=True,
+		email_account=account,
+	)
 
 
 @frappe.whitelist(allow_guest=True)
@@ -239,8 +269,14 @@ def register_company(
 	site_label: Optional[str] = None,
 	admin_email: Optional[str] = None,
 	admin_password: Optional[str] = None,
+	plan_code: Optional[str] = None,
 ):
 	"""Public registration endpoint."""
+	from superadmin.rate_limit import assert_rate_limit
+
+	_ip = getattr(frappe.local, 'request_ip', None) or 'unknown'
+	assert_rate_limit(f'signup:{_ip}', limit=5, window_seconds=600)
+
 	company_name = (company_name or "").strip()
 	site_label = (site_label or "").strip().lower()
 	admin_email = _normalize_email(admin_email or "")
@@ -262,6 +298,7 @@ def register_company(
 	site_name = expand_site_name(site_label)
 	_assert_email_available(admin_email)
 	_assert_site_available(site_name)
+	resolved_plan = _resolve_signup_plan(plan_code)
 
 	mandatory = is_email_verification_mandatory()
 	token = frappe.generate_hash(length=48) if mandatory else ""
@@ -279,10 +316,26 @@ def register_company(
 			"verification_token": token,
 			"verification_expires": expires,
 			"provision_log": _("Signup received via website."),
+			"plan": resolved_plan,
 		}
 	)
 	signup.insert(ignore_permissions=True)
 	frappe.db.commit()
+
+	try:
+		from superadmin import notifications
+
+		notifications.notify_event(
+			"signup_received",
+			{
+				"company_name": company_name,
+				"site_name": site_name,
+				"admin_email": admin_email,
+				"plan": resolved_plan,
+			},
+		)
+	except Exception:
+		pass
 
 	if mandatory:
 		try:
@@ -321,6 +374,18 @@ def _provision_from_signup(signup_name: str) -> dict:
 	signup.provision_log = _append_log(signup.provision_log, _("Created Tenant Company {0}").format(tc_name))
 	signup.save(ignore_permissions=True)
 	frappe.db.commit()
+
+	if signup.plan and not frappe.db.exists("SaaS Subscription", {"tenant_company": tc_name}):
+		try:
+			from superadmin.subscription import create_subscription_for_tenant
+
+			create_subscription_for_tenant(
+				tc_name,
+				signup.plan,
+				billing_email=signup.admin_email,
+			)
+		except Exception:
+			frappe.log_error(title="superadmin signup subscription")
 
 	result = _enqueue_provision(tc_name)
 	signup.provision_log = _append_log(signup.provision_log, _("Provision queued: {0}").format(result))

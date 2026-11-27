@@ -1,0 +1,47 @@
+{% extends "templates/web.html" %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block title %}الأسعار — ORACPC{% endblock %}
+
+{% block page_content %}
+<div class="sa-portal">
+  <div class="sa-wrap">
+    <nav class="sa-nav">
+      <a class="sa-brand" href="/home"><span class="sa-brand-mark"></span>ORACPC</a>
+      <div class="sa-nav-actions">
+        <a class="sa-btn sa-btn-ghost" href="/account">حسابي</a>
+        <a class="sa-btn sa-btn-primary" href="/signup">إنشاء حساب</a>
+      </div>
+    </nav>
+
+    <section class="sa-hero" style="min-height:auto;padding:2rem 0;">
+      <div>
+        <h1>{{ portal.hero_title or "خطط الاشتراك" }}</h1>
+        <p class="sa-lead">{{ portal.hero_subtitle or "اختر الخطة المناسبة لشركتك" }}</p>
+      </div>
+    </section>
+
+    <section class="sa-grid">
+      {% for plan in plans %}
+      <div class="sa-card">
+        <h3>{{ plan.plan_name }}</h3>
+        {% if plan.is_free %}
+        <p><strong>تجربة مجانية</strong> — {{ plan.trial_days or 14 }} يوم</p>
+        {% else %}
+        <p><strong>{{ plan.price }} {{ plan.currency or "SAR" }}</strong> / {{ plan.billing_period }}</p>
+        {% endif %}
+        <ul>
+          <li>حتى {{ plan.max_users or "—" }} مستخدم</li>
+          <li>تخزين {{ plan.max_storage_mb or "—" }} ميجابايت</li>
+        </ul>
+        <a class="sa-btn sa-btn-primary sa-btn-block" href="/signup?plan={{ plan.name }}">ابدأ بهذه الخطة</a>
+      </div>
+      {% endfor %}
+      {% if not plans %}
+      <div class="sa-card"><p>لا توجد خطط عامة بعد. تواصل مع الدعم.</p></div>
+      {% endif %}
+    </section>
+    <div class="sa-footer">© ORACPC</div>
+  </div>
+</div>
+{% endblock %}

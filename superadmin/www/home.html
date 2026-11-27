@@ -16,10 +16,11 @@
     <section class="sa-hero">
       <div>
         <div class="sa-kicker">منصة متعددة الشركات</div>
-        <h1>شغّل شركتك على السحابة خلال دقائق</h1>
-        <p>أنشئ حسابًا، احصل على دومين فرعي خاص، وابدأ المحاسبة والمبيعات والمخزون عبر ERPNext — بواجهة عربية وإعداد تلقائي.</p>
+        <h1>{{ portal.hero_title or "شغّل شركتك على السحابة خلال دقائق" }}</h1>
+        <p>{{ portal.hero_subtitle or "أنشئ حسابًا، احصل على دومين فرعي خاص، وابدأ المحاسبة والمبيعات والمخزون عبر ERPNext — بواجهة عربية وإعداد تلقائي." }}</p>
         <div class="sa-nav-actions">
-          <a class="sa-btn sa-btn-primary" href="/signup">ابدأ الآن</a>
+          <a class="sa-btn sa-btn-primary" href="/signup">{{ portal.hero_cta_label or "ابدأ الآن" }}</a>
+          <a class="sa-btn sa-btn-ghost" href="/pricing">الأسعار</a>
           <a class="sa-btn sa-btn-ghost" href="/portal-login">لدي حساب بالفعل</a>
         </div>
       </div>
@@ -36,6 +37,17 @@
         <div class="sa-panel-foot">بعد اكتمال الإنشاء ستنتقل لتسجيل الدخول وإكمال الإعداد.</div>
       </aside>
     </section>
+    {% if show_plans and plans %}
+    <section class="sa-grid">
+      {% for plan in plans %}
+      <div class="sa-card">
+        <h3>{{ plan.plan_name }}</h3>
+        <p>{% if plan.is_free %}تجربة {{ plan.trial_days or 14 }} يوم{% else %}{{ plan.price }} {{ plan.currency or "SAR" }}{% endif %}</p>
+        <a class="sa-btn sa-btn-ghost" href="/signup?plan={{ plan.name }}">اختر الخطة</a>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
     <section class="sa-grid">
       <div class="sa-card"><h3>إطلاق سريع</h3><p>نموذج واحد ثم متابعة التقدم حتى جاهزية الموقع.</p></div>
       <div class="sa-card"><h3>عزل تام</h3><p>كل شركة على موقع وقاعدة بيانات منفصلة.</p></div>

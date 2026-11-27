@@ -180,10 +180,17 @@ def sync_branding_assets(doc=None) -> tuple[Optional[str], Optional[str]]:
 
 
 DESK_BRANDING_JS = "/assets/superadmin/js/desk_branding.js"
+SETUP_WIZARD_SAAS_JS = "/assets/superadmin/js/setup_wizard_saas.js"
+
+# Injected on every tenant (and management) via site_config — apps need not be installed.
+_TENANT_DESK_JS = (
+	DESK_BRANDING_JS,
+	SETUP_WIZARD_SAAS_JS,
+)
 
 
 def ensure_desk_branding_js_include() -> None:
-	"""Load setup-wizard / desk logo patch on sites that do not install superadmin.
+	"""Load desk logo + SaaS setup-wizard patches on sites that do not install superadmin.
 
 	Frappe merges site_config.app_include_js with installed-app hooks (desk.py).
 	"""
@@ -195,10 +202,28 @@ def ensure_desk_branding_js_include() -> None:
 	elif not isinstance(current, list):
 		current = list(current)
 
-	if DESK_BRANDING_JS not in current:
-		current = list(current) + [DESK_BRANDING_JS]
+	changed = False
+	for path in _TENANT_DESK_JS:
+		if path not in current:
+			current = list(current) + [path]
+			changed = True
+	if changed:
 		update_site_config("app_include_js", current)
 		frappe.conf.app_include_js = current
+
+
+def ensure_tenant_saas_js(site_name: str) -> None:
+	"""Ensure setup_wizard_saas.js (+ branding js) is in tenant site_config.app_include_js."""
+	from superadmin.compat import with_site
+
+	site_name = (site_name or "").strip()
+	if not site_name:
+		return
+
+	def _inner():
+		ensure_desk_branding_js_include()
+
+	with_site(site_name, _inner)
 
 
 def apply_branding_to_current_site(

@@ -13,6 +13,7 @@
   "column_break_1",
   "admin_email",
   "admin_password",
+  "plan",
   "section_status",
   "status",
   "verification_token",
@@ -62,6 +63,12 @@
    "fieldtype": "Password",
    "label": "Administrator Password",
    "reqd": 1
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "label": "Plan",
+   "options": "SaaS Plan"
   },
   {
    "fieldname": "section_status",

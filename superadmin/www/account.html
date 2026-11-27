@@ -1,0 +1,118 @@
+{% extends "templates/web.html" %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block title %}حسابي — ORACPC{% endblock %}
+
+{% block page_content %}
+<div class="sa-portal">
+  <div class="sa-wrap">
+    <nav class="sa-nav">
+      <a class="sa-brand" href="/home"><span class="sa-brand-mark"></span>ORACPC</a>
+      <div class="sa-nav-actions">
+        <a class="sa-btn sa-btn-ghost" href="/pricing">الأسعار</a>
+        <a class="sa-btn sa-btn-primary" href="/signup">إنشاء حساب</a>
+      </div>
+    </nav>
+
+    <div class="sa-form-shell">
+      <div class="sa-card" id="sa-account-lookup">
+        <h1>بوابة العميل</h1>
+        <p class="sa-lead">أدخل البريد الإلكتروني للمسؤول لعرض الاشتراك والفواتير والتذاكر.</p>
+        <div id="sa-account-alert" class="sa-alert"></div>
+        <form id="sa-account-form">
+          <div class="sa-field">
+            <label for="acct_email">البريد الإلكتروني</label>
+            <input id="acct_email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <button class="sa-btn sa-btn-primary sa-btn-block" type="submit">عرض لوحة الحساب</button>
+        </form>
+      </div>
+
+      <div class="sa-card sa-hidden" id="sa-account-dash">
+        <h1 id="dash-company">—</h1>
+        <p id="dash-site" class="sa-lead"></p>
+        <section class="sa-grid" style="margin-top:1rem">
+          <div class="sa-card">
+            <h3>الاشتراك</h3>
+            <pre id="dash-sub" style="white-space:pre-wrap;font-family:inherit;margin:0"></pre>
+          </div>
+          <div class="sa-card">
+            <h3>الفواتير</h3>
+            <div id="dash-invoices"></div>
+          </div>
+          <div class="sa-card">
+            <h3>تذاكر الدعم</h3>
+            <div id="dash-tickets"></div>
+            <form id="sa-ticket-form" style="margin-top:1rem">
+              <div class="sa-field"><label for="tkt_subject">الموضوع</label><input id="tkt_subject" required /></div>
+              <div class="sa-field"><label for="tkt_desc">الوصف</label><textarea id="tkt_desc" rows="3"></textarea></div>
+              <button class="sa-btn sa-btn-ghost" type="submit">فتح تذكرة</button>
+            </form>
+          </div>
+        </section>
+        <a class="sa-btn sa-btn-primary" id="dash-login" href="/portal-login" style="margin-top:1rem">دخول الموقع</a>
+      </div>
+    </div>
+    <div class="sa-footer">© ORACPC</div>
+  </div>
+</div>
+<script>
+frappe.ready(function () {
+  let currentEmail = "";
+  const alertEl = document.getElementById("sa-account-alert");
+  function showAlert(msg, kind) {
+    alertEl.className = "sa-alert show sa-alert-" + (kind || "info");
+    alertEl.textContent = msg;
+  }
+  function renderDash(m) {
+    document.getElementById("sa-account-lookup").classList.add("sa-hidden");
+    document.getElementById("sa-account-dash").classList.remove("sa-hidden");
+    document.getElementById("dash-company").textContent = m.company_name || "—";
+    document.getElementById("dash-site").textContent = m.site_name ? ("الموقع: " + m.site_name) : "";
+    document.getElementById("dash-sub").textContent = m.subscription ? JSON.stringify(m.subscription, null, 2) : "لا يوجد اشتراك";
+    const inv = document.getElementById("dash-invoices");
+    inv.innerHTML = (m.invoices || []).map(function (i) {
+      return "<p>" + i.name + " — " + i.amount + " " + (i.currency || "") + " (" + i.status + ")</p>";
+    }).join("") || "<p>لا فواتير</p>";
+    const tkt = document.getElementById("dash-tickets");
+    tkt.innerHTML = (m.tickets || []).map(function (t) {
+      return "<p>" + t.subject + " — " + t.status + "</p>";
+    }).join("") || "<p>لا تذاكر</p>";
+    const login = document.getElementById("dash-login");
+    login.href = "/portal-login?email=" + encodeURIComponent(currentEmail);
+  }
+  document.getElementById("sa-account-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    currentEmail = document.getElementById("acct_email").value.trim();
+    frappe.call({
+      method: "superadmin.portal_api.get_customer_dashboard",
+      args: { email: currentEmail },
+      callback: function (r) {
+        if (r.exc) return;
+        renderDash(r.message || {});
+      },
+      error: function () { showAlert("لم يتم العثور على حساب لهذا البريد.", "err"); }
+    });
+  });
+  document.getElementById("sa-ticket-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!currentEmail) return;
+    frappe.call({
+      method: "superadmin.portal_api.create_customer_ticket",
+      args: {
+        email: currentEmail,
+        subject: document.getElementById("tkt_subject").value,
+        description: document.getElementById("tkt_desc").value,
+      },
+      callback: function () {
+        frappe.call({
+          method: "superadmin.portal_api.get_customer_dashboard",
+          args: { email: currentEmail },
+          callback: function (r) { if (!r.exc) renderDash(r.message || {}); }
+        });
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

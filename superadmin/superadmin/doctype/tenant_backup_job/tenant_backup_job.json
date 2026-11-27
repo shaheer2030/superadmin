@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-11-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "allow_rename": 0,
+ "autoname": "BK-.#####",
+ "default_view": "List",
+ "field_order": [
+  "tenant_company",
+  "site_name",
+  "backup_type",
+  "status",
+  "column_break_1",
+  "started_on",
+  "finished_on",
+  "section_output",
+  "file_path",
+  "log"
+ ],
+ "fields": [
+  {
+   "fieldname": "tenant_company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tenant Company",
+   "options": "Tenant Company"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Site Name"
+  },
+  {
+   "fieldname": "backup_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Backup Type",
+   "options": "Manual\nScheduled\nPre-Delete"
+  },
+  {
+   "default": "Queued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Queued\nRunning\nSuccess\nFailed"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "started_on",
+   "fieldtype": "Datetime",
+   "label": "Started On"
+  },
+  {
+   "fieldname": "finished_on",
+   "fieldtype": "Datetime",
+   "label": "Finished On"
+  },
+  {
+   "fieldname": "section_output",
+   "fieldtype": "Section Break",
+   "label": "Output"
+  },
+  {
+   "fieldname": "file_path",
+   "fieldtype": "Small Text",
+   "label": "File Path"
+  },
+  {
+   "fieldname": "log",
+   "fieldtype": "Long Text",
+   "label": "Log"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "name": "Tenant Backup Job",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Ops",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  }
+ ],
+ "track_changes": 1
+}

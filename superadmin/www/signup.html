@@ -93,6 +93,9 @@ frappe.ready(function () {
   const mailView = document.getElementById("sa-mail-view");
   let baseDomain = "";
   let pollTimer = null;
+  let selectedPlan = "";
+  const urlParams = new URLSearchParams(window.location.search);
+  selectedPlan = urlParams.get("plan") || "";
 
   function showAlert(el, msg, kind) {
     el.className = "sa-alert show sa-alert-" + (kind || "info");
@@ -242,6 +245,7 @@ frappe.ready(function () {
         site_label: form.site_label.value,
         admin_email: form.admin_email.value,
         admin_password: form.admin_password.value,
+        plan_code: selectedPlan,
       },
       callback: function (r) {
         btn.disabled = false;

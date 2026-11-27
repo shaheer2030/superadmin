@@ -1,0 +1,276 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-11-27 20:05:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "allow_rename": 1,
+ "autoname": "field:plan_code",
+ "default_view": "List",
+ "field_order": [
+  "plan_code",
+  "plan_name",
+  "is_active",
+  "is_public",
+  "is_free",
+  "column_break_1",
+  "trial_days",
+  "billing_period",
+  "price_monthly",
+  "price_yearly",
+  "price",
+  "currency",
+  "section_description",
+  "description",
+  "section_limits",
+  "max_users",
+  "max_companies",
+  "max_branches",
+  "max_storage_mb",
+  "max_api_requests",
+  "grace_days",
+  "sort_order",
+  "support_level",
+  "backup_included",
+  "section_apps",
+  "install_apps",
+  "plan_apps",
+  "section_modules",
+  "plan_modules",
+  "section_features",
+  "features"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Plan Code",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "plan_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Plan Name",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_public",
+   "fieldtype": "Check",
+   "label": "Is Public"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_free",
+   "fieldtype": "Check",
+   "label": "Is Free"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "trial_days",
+   "fieldtype": "Int",
+   "label": "Trial Days"
+  },
+  {
+   "fieldname": "billing_period",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Billing Period",
+   "options": "Monthly\nYearly\nOne-time\nTrial"
+  },
+  {
+   "fieldname": "price_monthly",
+   "fieldtype": "Currency",
+   "label": "Monthly Price",
+   "description": "السعر الشهري بالريال"
+  },
+  {
+   "fieldname": "price_yearly",
+   "fieldtype": "Currency",
+   "label": "Yearly Price",
+   "description": "السعر السنوي بالريال"
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "description": "Legacy/default price used when monthly/yearly empty"
+  },
+  {
+   "default": "SAR",
+   "fieldname": "currency",
+   "fieldtype": "Data",
+   "label": "Currency"
+  },
+  {
+   "fieldname": "section_description",
+   "fieldtype": "Section Break",
+   "label": "Description"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "section_limits",
+   "fieldtype": "Section Break",
+   "label": "Limits"
+  },
+  {
+   "fieldname": "max_users",
+   "fieldtype": "Int",
+   "label": "Max Users"
+  },
+  {
+   "default": "1",
+   "fieldname": "max_companies",
+   "fieldtype": "Int",
+   "label": "Max Companies"
+  },
+  {
+   "fieldname": "max_branches",
+   "fieldtype": "Int",
+   "label": "Max Branches",
+   "default": "1"
+  },
+  {
+   "fieldname": "max_storage_mb",
+   "fieldtype": "Int",
+   "label": "Max Storage (MB)"
+  },
+  {
+   "fieldname": "max_api_requests",
+   "fieldtype": "Int",
+   "label": "Max API Requests / Day",
+   "description": "0 = unlimited"
+  },
+  {
+   "default": "3",
+   "fieldname": "grace_days",
+   "fieldtype": "Int",
+   "label": "Grace Days"
+  },
+  {
+   "fieldname": "sort_order",
+   "fieldtype": "Int",
+   "label": "Sort Order"
+  },
+  {
+   "fieldname": "support_level",
+   "fieldtype": "Select",
+   "label": "Support Level",
+   "options": "Community\nStandard\nPriority\nDedicated",
+   "default": "Standard"
+  },
+  {
+   "fieldname": "backup_included",
+   "fieldtype": "Check",
+   "label": "Backup Included",
+   "default": "1"
+  },
+  {
+   "fieldname": "section_apps",
+   "fieldtype": "Section Break",
+   "label": "Frappe Apps",
+   "description": "تطبيقات Frappe مستقلة تُثبَّت على موقع العميل (مثل erpnext أو hrms). ليست وحدات داخل ERPNext."
+  },
+  {
+   "fieldname": "install_apps",
+   "fieldtype": "Small Text",
+   "label": "Install Apps (legacy)",
+   "description": "متوافق مع الإصدارات السابقة. يُحدَّث تلقائيًا من جدول التطبيقات أدناه عند الحفظ."
+  },
+  {
+   "fieldname": "plan_apps",
+   "fieldtype": "Table",
+   "label": "Plan Apps",
+   "options": "SaaS Plan App"
+  },
+  {
+   "fieldname": "section_modules",
+   "fieldtype": "Section Break",
+   "label": "ERPNext Modules",
+   "description": "وحدات موجودة أصلًا داخل تطبيق مثبت (مثل Accounts/Stock داخل erpnext). تُدار عبر Module Profile والأدوار — دون تثبيت تطبيق جديد."
+  },
+  {
+   "fieldname": "plan_modules",
+   "fieldtype": "Table",
+   "label": "Plan Modules",
+   "options": "SaaS Plan Module"
+  },
+  {
+   "fieldname": "section_features",
+   "fieldtype": "Section Break",
+   "label": "Features / Add-ons"
+  },
+  {
+   "fieldname": "features",
+   "fieldtype": "Table",
+   "label": "Features",
+   "options": "SaaS Plan Feature"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "name": "SaaS Plan",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Billing",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  }
+ ],
+ "track_changes": 1
+}

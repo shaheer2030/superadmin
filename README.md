@@ -87,6 +87,44 @@ Priority:
 
 ---
 
+## SaaS layer (plans, billing, portal)
+
+**English:** The Superadmin app includes a SaaS control plane on the **management site**: **SaaS Plan / Subscription / Invoice / Coupon**, tenant limits pushed into each site’s `site_config.json`, hourly subscription enforcement, daily scheduled backups, guest pages (`/pricing`, `/account`, `/signup?plan=`), and the **SaaS Overview** script report. Platform roles: **Platform Admin**, **Platform Billing**, **Platform Support**, **Platform Ops**. **Multi-server orchestration is deferred** — a single default **Server Node** is seeded for now.
+
+**العربية:** طبقة SaaS على موقع الإدارة: خطط واشتراكات وفواتير وكوبونات، حدود لكل عميل، نسخ احتياطي مجدول، بوابة عملاء وأسعار، وتقرير **SaaS Overview**. تنسيق عدة خوادم **مؤجل** حاليًا.
+
+After pulling these changes:
+
+```bash
+bench --site <management-site> migrate
+bench build --app superadmin
+bench clear-cache
+```
+
+Ensure **hourly/daily scheduler** (`bench schedule` or equivalent) runs for `enforce_all_subscriptions` and `enqueue_scheduled_backups`.
+
+Desk: **Superadmin → SaaS Overview** report; API `superadmin.analytics.get_saas_dashboard_metrics` for programmatic metrics.
+
+### Ops flags
+
+| Config key | Purpose |
+|------------|---------|
+| `superadmin_allow_delete_without_backup` | Allow delete if pre-delete backup fails |
+| `superadmin_allow_restore` | Enable restore API (still lab-oriented) |
+| `superadmin_restore_lab_site` | Target lab site name for restore hints |
+
+### Public routes
+
+`/`, `/pricing`, `/signup?plan=`, `/verify`, `/portal-login`, `/account`
+
+### Scheduler
+
+- Hourly: `superadmin.limits.enforce_all_subscriptions` (status + max_users)
+- Daily: `superadmin.backup.enqueue_scheduled_backups` (+ retention prune)
+
+
+---
+
 ## License
 
 See `license.txt`.

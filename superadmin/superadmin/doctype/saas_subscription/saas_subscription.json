@@ -1,0 +1,182 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-11-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "allow_rename": 0,
+ "autoname": "SUB-.#####",
+ "default_view": "List",
+ "field_order": [
+  "tenant_company",
+  "plan",
+  "status",
+  "column_break_1",
+  "start_date",
+  "trial_end",
+  "current_period_start",
+  "current_period_end",
+  "next_billing_date",
+  "section_renewal",
+  "auto_renew",
+  "grace_until",
+  "cancel_at_period_end",
+  "cancelled_on",
+  "section_billing",
+  "billing_email",
+  "coupon",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "tenant_company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tenant Company",
+   "options": "Tenant Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Plan",
+   "options": "SaaS Plan",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Trial\nActive\nPast Due\nGrace\nSuspended\nCancelled\nExpired"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "trial_end",
+   "fieldtype": "Date",
+   "label": "Trial End"
+  },
+  {
+   "fieldname": "current_period_start",
+   "fieldtype": "Date",
+   "label": "Current Period Start"
+  },
+  {
+   "fieldname": "current_period_end",
+   "fieldtype": "Date",
+   "label": "Current Period End"
+  },
+  {
+   "fieldname": "next_billing_date",
+   "fieldtype": "Date",
+   "label": "Next Billing Date"
+  },
+  {
+   "fieldname": "section_renewal",
+   "fieldtype": "Section Break",
+   "label": "Renewal & Grace"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_renew",
+   "fieldtype": "Check",
+   "label": "Auto Renew"
+  },
+  {
+   "fieldname": "grace_until",
+   "fieldtype": "Date",
+   "label": "Grace Until"
+  },
+  {
+   "default": "0",
+   "fieldname": "cancel_at_period_end",
+   "fieldtype": "Check",
+   "label": "Cancel at Period End"
+  },
+  {
+   "fieldname": "cancelled_on",
+   "fieldtype": "Date",
+   "label": "Cancelled On"
+  },
+  {
+   "fieldname": "section_billing",
+   "fieldtype": "Section Break",
+   "label": "Billing"
+  },
+  {
+   "fieldname": "billing_email",
+   "fieldtype": "Data",
+   "label": "Billing Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "coupon",
+   "fieldtype": "Link",
+   "label": "Coupon",
+   "options": "SaaS Coupon"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "name": "SaaS Subscription",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Billing",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  }
+ ],
+ "track_changes": 1
+}

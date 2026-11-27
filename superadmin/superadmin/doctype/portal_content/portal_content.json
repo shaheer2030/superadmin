@@ -1,0 +1,127 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-11-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "field_order": [
+  "section_hero",
+  "hero_title",
+  "hero_subtitle",
+  "hero_cta_label",
+  "section_content",
+  "features_html",
+  "faq_html",
+  "section_contact",
+  "contact_email",
+  "contact_phone",
+  "footer_html",
+  "section_portal",
+  "show_plans_section"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_hero",
+   "fieldtype": "Section Break",
+   "label": "Hero"
+  },
+  {
+   "fieldname": "hero_title",
+   "fieldtype": "Data",
+   "label": "Hero Title"
+  },
+  {
+   "fieldname": "hero_subtitle",
+   "fieldtype": "Data",
+   "label": "Hero Subtitle"
+  },
+  {
+   "fieldname": "hero_cta_label",
+   "fieldtype": "Data",
+   "label": "Hero CTA Label"
+  },
+  {
+   "fieldname": "section_content",
+   "fieldtype": "Section Break",
+   "label": "Content"
+  },
+  {
+   "fieldname": "features_html",
+   "fieldtype": "Text Editor",
+   "label": "Features HTML"
+  },
+  {
+   "fieldname": "faq_html",
+   "fieldtype": "Text Editor",
+   "label": "FAQ HTML"
+  },
+  {
+   "fieldname": "section_contact",
+   "fieldtype": "Section Break",
+   "label": "Contact"
+  },
+  {
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Contact Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
+  },
+  {
+   "fieldname": "footer_html",
+   "fieldtype": "Text Editor",
+   "label": "Footer HTML"
+  },
+  {
+   "fieldname": "section_portal",
+   "fieldtype": "Section Break",
+   "label": "Portal"
+  },
+  {
+   "default": "1",
+   "fieldname": "show_plans_section",
+   "fieldtype": "Check",
+   "label": "Show Plans Section"
+  }
+ ],
+ "issingle": 1,
+ "name": "Portal Content",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Platform Admin",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "share": 1,
+   "report": 1
+  }
+ ],
+ "track_changes": 1
+}

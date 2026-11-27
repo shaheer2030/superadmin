@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "links": [],
+ "modified": "2026-11-27 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "owner": "Administrator",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "editable_grid": 1,
+ "field_order": [
+  "feature_key",
+  "feature_label",
+  "enabled",
+  "limit_value",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "feature_key",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Feature Key",
+   "reqd": 1
+  },
+  {
+   "fieldname": "feature_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Feature Label"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "limit_value",
+   "fieldtype": "Data",
+   "label": "Limit Value"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Data",
+   "label": "Notes"
+  }
+ ],
+ "istable": 1,
+ "name": "SaaS Plan Feature",
+ "permissions": [],
+ "track_changes": 0
+}
