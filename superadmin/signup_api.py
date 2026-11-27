@@ -34,30 +34,83 @@ def _normalize_email(email: str) -> str:
 	return email
 
 
+def _clear_orphan_signups_for_email(email: str) -> None:
+	"""Delete signup rows whose Tenant Company was deleted (frees unique email/site_name)."""
+	rows = frappe.get_all(
+		"Tenant Signup",
+		filters={"admin_email": email},
+		fields=["name", "status", "tenant_company", "site_name"],
+	)
+	deleted = False
+	for row in rows:
+		tc = (row.tenant_company or "").strip()
+		company_exists = bool(tc) and frappe.db.exists("Tenant Company", tc)
+		# Keep only signups still tied to a living company, or pending verification
+		if company_exists:
+			continue
+		if row.status == "Pending Verification" and not tc:
+			continue
+		try:
+			frappe.delete_doc("Tenant Signup", row.name, ignore_permissions=True, force=True)
+			deleted = True
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "superadmin.clear_orphan_signup")
+	if deleted:
+		frappe.db.commit()
+
+
+def _clear_orphan_signups_for_site(site_name: str) -> None:
+	"""Delete leftover signup rows that still reserve a site_name after company delete."""
+	site_name = (site_name or "").strip().lower()
+	if not site_name:
+		return
+	rows = frappe.get_all(
+		"Tenant Signup",
+		filters={"site_name": site_name},
+		fields=["name", "status", "tenant_company"],
+	)
+	deleted = False
+	for row in rows:
+		tc = (row.tenant_company or "").strip()
+		if tc and frappe.db.exists("Tenant Company", tc):
+			continue
+		try:
+			frappe.delete_doc("Tenant Signup", row.name, ignore_permissions=True, force=True)
+			deleted = True
+		except Exception:
+			frappe.log_error(frappe.get_traceback(), "superadmin.clear_orphan_signup_site")
+	if deleted:
+		frappe.db.commit()
+
+
 def _assert_email_available(email: str, ignore_signup: Optional[str] = None) -> None:
-	filters = {"admin_email": email}
-	if ignore_signup:
-		filters["name"] = ["!=", ignore_signup]
-	if frappe.db.exists("Tenant Signup", filters):
-		# allow resend only for pending same email handled elsewhere
-		existing = frappe.db.get_value(
-			"Tenant Signup",
-			{"admin_email": email},
-			["name", "status"],
-			as_dict=True,
-		)
-		if existing and existing.status in ("Pending Verification",):
-			if ignore_signup and existing.name == ignore_signup:
-				return
-			if not ignore_signup:
-				frappe.throw(_("An unverified signup already exists for this email. Check your inbox or wait and retry."))
-		elif existing and existing.status in ("Verified", "Provisioning", "Active"):
-			frappe.throw(_("This email is already registered."))
+	_clear_orphan_signups_for_email(email)
+
 	if frappe.db.exists("Tenant Company", {"admin_email": email}):
 		frappe.throw(_("This email is already linked to a company account."))
 
+	rows = frappe.get_all(
+		"Tenant Signup",
+		filters={"admin_email": email},
+		fields=["name", "status", "tenant_company"],
+		order_by="modified desc",
+	)
+	for existing in rows:
+		if ignore_signup and existing.name == ignore_signup:
+			continue
+		if existing.status == "Pending Verification":
+			frappe.throw(
+				_("An unverified signup already exists for this email. Check your inbox or wait and retry.")
+			)
+		if existing.status in ("Verified", "Provisioning", "Active"):
+			# Only block if the company still exists
+			tc = (existing.tenant_company or "").strip()
+			if tc and frappe.db.exists("Tenant Company", tc):
+				frappe.throw(_("This email is already registered."))
+
 
 def _assert_site_available(site_name: str) -> None:
+	_clear_orphan_signups_for_site(site_name)
 	if frappe.db.exists("Tenant Company", {"site_name": site_name}):
 		frappe.throw(_("Site Name {0} is already taken.").format(site_name))
 	if frappe.db.exists("Tenant Signup", {"site_name": site_name, "status": ["in", ["Pending Verification", "Verified", "Provisioning", "Active"]]}):

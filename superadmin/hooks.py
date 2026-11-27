@@ -9,6 +9,7 @@ doctype_js = {"Tenant Company": "public/js/tenant_company.js"}
 
 # Public portal assets
 app_include_css = []
+app_include_js = ["/assets/superadmin/js/desk_branding.js"]
 web_include_css = ["/assets/superadmin/css/portal.css"]
 
 # Ensure www pages wrap into web.html when content-only templates are used
@@ -19,11 +20,13 @@ base_template_map = {
 	r"portal-login": "templates/web.html",
 }
 
+# Tenants get erpnext only; branding JS is injected via site_config app_include_js
+# (see system_branding.apply_branding_to_current_site) so a second app is not required.
 superadmin_default_install_apps = ["erpnext"]
 required_apps = []
 
-after_migrate = ["superadmin.setup.ensure_portal_home"]
-after_install = ["superadmin.setup.ensure_portal_home"]
+after_migrate = ["superadmin.setup.ensure_portal_home", "superadmin.setup.ensure_system_branding_sidebar"]
+after_install = ["superadmin.setup.ensure_portal_home", "superadmin.setup.ensure_system_branding_sidebar"]
 
 website_route_rules = [
 	{"from_route": "/signup", "to_route": "signup"},

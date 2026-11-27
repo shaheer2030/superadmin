@@ -614,6 +614,15 @@ def _provision_job(docname: str):
 				)
 
 		_configure_tenant_admin(site_name, admin_email, admin_pw, company_name)
+		try:
+			from superadmin.superadmin.doctype.system_branding.system_branding import (
+				apply_branding_to_site,
+				get_branding_values,
+			)
+			if get_branding_values().get("apply_to_new_tenants"):
+				apply_branding_to_site(site_name)
+		except Exception:
+			frappe.log_error(title="superadmin apply branding to new tenant")
 		doc = frappe.get_doc("Tenant Company", docname)
 		_set_progress(
 			doc,
@@ -683,6 +692,37 @@ def _build_drop_site_command(bench: str, site_name: str, root_pw: str) -> List[s
 		"--force",
 		"--no-backup",
 	]
+
+
+
+def _delete_related_tenant_signups(
+	tenant_company: Optional[str] = None,
+	site_name: Optional[str] = None,
+	admin_email: Optional[str] = None,
+) -> list:
+	"""Delete Tenant Signup rows that reserve unique site_name/admin_email."""
+	filters = []
+	if tenant_company:
+		filters.append(["tenant_company", "=", tenant_company])
+	if site_name:
+		filters.append(["site_name", "=", site_name])
+	if admin_email:
+		filters.append(["admin_email", "=", (admin_email or "").strip().lower()])
+	seen = []
+	names = set()
+	for filt in filters:
+		for row in frappe.get_all("Tenant Signup", filters=[filt], pluck="name"):
+			if row in names:
+				continue
+			names.add(row)
+			try:
+				frappe.delete_doc("Tenant Signup", row, ignore_permissions=True, force=True)
+				seen.append(row)
+			except Exception:
+				frappe.log_error(frappe.get_traceback(), "superadmin.delete_tenant_signup")
+	if seen:
+		frappe.db.commit()
+	return seen
 
 
 @frappe.whitelist()
@@ -794,6 +834,20 @@ def _delete_job(docname: str):
 
 		cleanup_note = _queue_tenant_host_cleanup(site_name)
 		_set_progress(doc, 90, _("Host cleanup queued"), log_text=cleanup_note)
+
+		# Permanently remove portal signup rows so site_name/email unique fields are freed
+		deleted_signups = _delete_related_tenant_signups(
+			tenant_company=docname,
+			site_name=site_name,
+			admin_email=(doc.admin_email or "").strip().lower(),
+		)
+		if deleted_signups:
+			_set_progress(
+				doc,
+				92,
+				_("Signup records removed"),
+				log_text=_("Deleted Tenant Signup records: {0}").format(", ".join(deleted_signups)),
+			)
 
 		# Delete DocType row (bypass on_trash guard)
 		frappe.local.superadmin_allow_tenant_delete = True

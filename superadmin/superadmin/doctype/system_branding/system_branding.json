@@ -1,0 +1,95 @@
+{
+ "actions": [],
+ "creation": "2026-11-27 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_identity",
+  "system_name",
+  "section_logos",
+  "system_logo",
+  "column_break_logos",
+  "favicon",
+  "section_apply",
+  "apply_to_new_tenants",
+  "apply_to_all_tenants"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_identity",
+   "fieldtype": "Section Break",
+   "label": "هوية النظام"
+  },
+  {
+   "default": "ORACPC",
+   "description": "يظهر كاسم التطبيق بدل ERPNext/Frappe في الواجهة.",
+   "fieldname": "system_name",
+   "fieldtype": "Data",
+   "label": "اسم النظام",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_logos",
+   "fieldtype": "Section Break",
+   "label": "الشعار والأيقونة"
+  },
+  {
+   "description": "الشعار الظاهر في شريط القائمة الجانبية (بدل شعار ERPNext).",
+   "fieldname": "system_logo",
+   "fieldtype": "Attach Image",
+   "label": "شعار النظام"
+  },
+  {
+   "fieldname": "column_break_logos",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "أيقونة المتصفح (favicon). يفضّل ملف .ico أو .png بحجم صغير.",
+   "fieldname": "favicon",
+   "fieldtype": "Attach",
+   "label": "أيقونة المتصفح"
+  },
+  {
+   "fieldname": "section_apply",
+   "fieldtype": "Section Break",
+   "label": "تطبيق الإعدادات"
+  },
+  {
+   "default": "1",
+   "description": "تطبيق الهوية تلقائيًا عند إنشاء أي شركة جديدة من البوابة أو الإدارة.",
+   "fieldname": "apply_to_new_tenants",
+   "fieldtype": "Check",
+   "label": "تطبيق على الشركات الجديدة"
+  },
+  {
+   "description": "اضغط لحفظ ثم تطبيق الاسم/الشعار/الأيقونة على كل مواقع الشركات الحالية.",
+   "fieldname": "apply_to_all_tenants",
+   "fieldtype": "Button",
+   "label": "تطبيق على كل الشركات الحالية"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-11-27 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Superadmin",
+ "name": "System Branding",
+ "naming_rule": "",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
